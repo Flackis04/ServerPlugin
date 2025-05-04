@@ -16,7 +16,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class ServerPlugin extends JavaPlugin implements Listener {
 
-    @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
@@ -26,7 +25,6 @@ public class ServerPlugin extends JavaPlugin implements Listener {
         startItemCheckTask();
     }
 
-    @Override
     public void onDisable() {
         getLogger().info("ServerPlugin disabled");
     }
@@ -43,7 +41,6 @@ public class ServerPlugin extends JavaPlugin implements Listener {
     private void startItemCheckTask() {
         // Create a repeating task that checks every 20 ticks (1 second)
         new BukkitRunnable() {
-            @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     ItemStack itemInHand = player.getInventory().getItemInMainHand();
