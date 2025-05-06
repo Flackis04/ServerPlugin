@@ -1,4 +1,4 @@
-package org.bear.serverPlugin.UI;
+package org.bear.serverPlugin.ui;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,18 +14,22 @@ public class ScoreboardManager {
     private final Map<UUID, Objective> playerObjectives = new HashMap<>();
     private final Map<UUID, Integer> playerCrypto = new HashMap<>();
 
+    private static final String CRYPTO_LABEL = "§aCrypto: §f";
+
     public void createSidebar(Player player, int crypto) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective objective = scoreboard.registerNewObjective("info", "dummy");
+        Objective objective = scoreboard.registerNewObjective("info", "dummy", "§6Your Stats");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        objective.getScore("§aCrypto: §f" + crypto).setScore(0);
+        // Use constant label for consistency
+        objective.getScore(CRYPTO_LABEL + crypto).setScore(0);
 
         player.setScoreboard(scoreboard);
 
-        playerScoreboards.put(player.getUniqueId(), scoreboard);
-        playerObjectives.put(player.getUniqueId(), objective);
-        playerCrypto.put(player.getUniqueId(), crypto);
+        UUID uuid = player.getUniqueId();
+        playerScoreboards.put(uuid, scoreboard);
+        playerObjectives.put(uuid, objective);
+        playerCrypto.put(uuid, crypto);
     }
 
     public void updateCrypto(Player player, int newCrypto) {
@@ -36,13 +40,13 @@ public class ScoreboardManager {
 
         if (objective == null || scoreboard == null || oldCrypto == null) return;
 
-        // Remove old crypto line
-        scoreboard.resetScores("§eCrypto: §a" + oldCrypto);
+        // Remove the old score
+        scoreboard.resetScores(CRYPTO_LABEL + oldCrypto);
 
-        // Add new line
-        objective.getScore("§eCrypto: §a" + newCrypto).setScore(3);
+        // Add the updated score
+        objective.getScore(CRYPTO_LABEL + newCrypto).setScore(0);
 
-        // Update stored value
+        // Save the new value
         playerCrypto.put(uuid, newCrypto);
     }
 }
