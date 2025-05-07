@@ -10,6 +10,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bear.serverPlugin.ui.UpgradeUI;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 
 import java.util.Arrays;
 
@@ -23,19 +25,53 @@ public class PhoneUI {
 
     public void openPhoneUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Phone"));
-        inv.setItem(22, createCpuItem());
+        ItemStack phone = new ItemStack(Material.DIRT);
+        inv.setItem(11, createUpgradesBtn());
+        inv.setItem(13, createSellBtn());
+        inv.setItem(15, createCollectionBtn());
         player.openInventory(inv);
     }
 
-    private ItemStack createCpuItem() {
-        ItemStack item = new ItemStack(Material.EMERALD_BLOCK);
+    private ItemStack createSellBtn() {
+        ItemStack item = new ItemStack(Material.GOLD_BLOCK);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GRAY + "CPU");
+            meta.setDisplayName(ChatColor.GRAY + "SELL");
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Regulates your phone's clock speed",
-                    ChatColor.GRAY + "Current Level : " + state.delayLevel + " : " + (state.getDelayTicks() / 20f) + "s"
+                    ChatColor.DARK_GRAY + "Sell duplicates"
+            ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createUpgradesBtn() {
+        ItemStack item = new ItemStack(Material.DIRT); //change to phone
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "Upgrades");
+            meta.setLore(Arrays.asList(
+                    ChatColor.DARK_GRAY + "Sell duplicates"
+            ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createCollectionBtn() {
+        ItemStack item = new ItemStack(Material.BOOK);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "Collection");
+            meta.setLore(Arrays.asList(
+                    ChatColor.DARK_GRAY + "Blocks you've discovered"
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);

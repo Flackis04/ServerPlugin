@@ -5,36 +5,39 @@ import org.bear.serverPlugin.events.DropListener;
 import org.bear.serverPlugin.events.InteractListener;
 import org.bear.serverPlugin.events.InventoryListener;
 import org.bear.serverPlugin.events.JoinListener;
-import org.bear.serverPlugin.ui.PhoneUI;
-import org.bear.serverPlugin.ui.ScoreboardManager;
+import org.bear.serverPlugin.ui.*;
 
 import org.bukkit.Bukkit;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.Material;
-
-import java.util.*;
 
 public class ServerPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        ScoreboardManager scoreboardManager = new ScoreboardManager();  // Initialize scoreboard manager (no dependencies yet)
+        // Initialize the ScoreboardManager first
+        ScoreboardManager scoreboardManager = new ScoreboardManager();
 
-        // Temporary null to satisfy constructor, will be replaced after PluginState is created
-        PluginState pluginState = new PluginState(null, scoreboardManager); // Temporarily pass null PhoneUI
+        // Initialize the PluginState with temporary null values (no UI components yet)
+        PluginState state = new PluginState(null, null, null, scoreboardManager);
 
-        PhoneUI phoneUI = new PhoneUI(pluginState);  // Now create PhoneUI with PluginState
+        // Initialize UI components now that PluginState exists
+        UpgradeUI upgradeUI = new UpgradeUI(state);
+        SellUI sellUI = new SellUI(state);
+        CollectionUI collectionUI = new CollectionUI(state);
+        PhoneUI phoneUI = new PhoneUI(state);
 
-        pluginState.phoneUI = phoneUI;  // Set the actual PhoneUI inside PluginState
+        // Now, update the PluginState with the actual UI components
+        state.upgradeUI = upgradeUI;
+        state.sellUI = sellUI;
+        state.collectionUI = collectionUI;
+        state.phoneUI = phoneUI;
 
-        // Register event listeners with updated PluginState
-        Bukkit.getPluginManager().registerEvents(new DropListener(pluginState, phoneUI), this);
-        Bukkit.getPluginManager().registerEvents(new JoinListener(pluginState), this);
-        Bukkit.getPluginManager().registerEvents(new InteractListener(pluginState), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListener(pluginState), this);
+        // Register event listeners with the updated PluginState
+        Bukkit.getPluginManager().registerEvents(new DropListener(state, phoneUI), this);
+        Bukkit.getPluginManager().registerEvents(new JoinListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListener(state, upgradeUI, sellUI, collectionUI), this);
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }
-
 }

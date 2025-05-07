@@ -16,7 +16,7 @@ public class DropListener implements Listener {
 
     public DropListener(PluginState state, PhoneUI phoneUI) {
         this.state = state;
-        this.phoneUI = phoneUI;
+        this.phoneUI = new PhoneUI(state);
     }
 
     @EventHandler
@@ -25,10 +25,12 @@ public class DropListener implements Listener {
         ItemStack droppedItem = event.getItemDrop().getItemStack();
         ItemMeta itemMeta = droppedItem.getItemMeta();
 
-        if (itemMeta != null && itemMeta.hasCustomModelData()) {
+        if (itemMeta != null && itemMeta.hasCustomModelData() && itemMeta.getCustomModelDataComponent().getStrings().get(0).equals("phone")) {
             event.setCancelled(true);
             player.sendMessage("§aYou opened a UI!");
             phoneUI.openPhoneUI(player);
+            player.sendMessage("meta: " + droppedItem.getItemMeta());
+            player.sendMessage("type: " + droppedItem.getType());
         }
     }
 }
