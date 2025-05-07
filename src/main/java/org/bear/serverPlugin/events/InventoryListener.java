@@ -15,15 +15,9 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 public class InventoryListener implements Listener {
 
     private final PluginState state;
-    private final UpgradeUI upgradeUI;
-    private final SellUI sellUI;
-    private final CollectionUI collectionUI;
 
-    public InventoryListener(PluginState state, UpgradeUI upgradeUI, SellUI sellUI, CollectionUI collectionUI) {
+    public InventoryListener(PluginState state) {
         this.state = state;
-        this.upgradeUI = upgradeUI;
-        this.sellUI = sellUI;
-        this.collectionUI = collectionUI;
     }
 
 
@@ -39,24 +33,34 @@ public class InventoryListener implements Listener {
 
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
 
-            // clickedItem.getItemMeta().getCustomModelDataComponent().getStrings().get(0).equals("phone")
-            if (clickedItem.getType() == Material.DIRT) {
+            if (clickedItem.getType() == Material.DIRT &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Upgrades")) {
                 state.upgradeUI.openUpgradeUI(player);
             }
-            if (clickedItem.getType() == Material.GOLD_BLOCK) {
+
+            if (clickedItem.getType() == Material.GOLD_BLOCK &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "SELL")) {
                 state.sellUI.openSellUI(player);
             }
-            if (clickedItem.getType() == Material.BOOK) {
+            if (clickedItem.getType() == Material.BOOK &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Collection")) {
                 state.collectionUI.updateCollectionUI(player);
             }
 
-            if (clickedItem.getType() == Material.EMERALD_BLOCK) {
+            if (clickedItem.getType() == Material.EMERALD_BLOCK &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "CPU")) {
                 if (state.delayLevel >= 16) {
                     player.sendMessage(ChatColor.RED + "There exists no better CPU at the moment");
                 } else {
-                    int nextLevel = state.delayLevel + 1;
-                    int price = state.delayLevelCosts.getOrDefault(nextLevel, 500);
-
+                    int price = state.delayLevelCosts.getOrDefault(state.delayLevel, 0);
                     if (state.crypto >= price) {
                         state.crypto -= price;
                         state.delayLevel += 1;

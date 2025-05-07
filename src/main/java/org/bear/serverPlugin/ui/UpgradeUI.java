@@ -39,11 +39,13 @@ public class UpgradeUI {
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "CPU");
+            boolean canAfford = state.crypto >= currentCost;
             meta.setLore(Arrays.asList(
                     ChatColor.DARK_GRAY + "Regulates your phone's clock speed",
-                    ChatColor.GRAY + "Current Level: " + state.delayLevel + " : " + (state.getDelayTicks() / 20f) + "s",
-                    ChatColor.GRAY + "Cost: " + currentCost
+                    ChatColor.GRAY + "Level: " + state.delayLevel + " (" + (state.getDelayTicks() / 20f) + "s)",
+                    (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + currentCost
             ));
+
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }

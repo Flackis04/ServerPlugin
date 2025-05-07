@@ -1,7 +1,6 @@
 package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
-import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,22 +9,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bear.serverPlugin.ui.UpgradeUI;
-import io.papermc.paper.datacomponent.item.CustomModelData;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class PhoneUI {
 
-    private final PluginState state;
-
-    public PhoneUI(PluginState state) {
-        this.state = state;
-    }
-
     public void openPhoneUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Phone"));
-        ItemStack phone = new ItemStack(Material.DIRT);
         inv.setItem(11, createUpgradesBtn());
         inv.setItem(13, createSellBtn());
         inv.setItem(15, createCollectionBtn());
@@ -38,7 +28,7 @@ public class PhoneUI {
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "SELL");
-            meta.setLore(Arrays.asList(
+            meta.setLore(List.of(
                     ChatColor.DARK_GRAY + "Sell duplicates"
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
@@ -54,7 +44,7 @@ public class PhoneUI {
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Upgrades");
-            meta.setLore(Arrays.asList(
+            meta.setLore(List.of(
                     ChatColor.DARK_GRAY + "Sell duplicates"
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
@@ -70,7 +60,7 @@ public class PhoneUI {
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Collection");
-            meta.setLore(Arrays.asList(
+            meta.setLore(List.of(
                     ChatColor.DARK_GRAY + "Blocks you've discovered"
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);

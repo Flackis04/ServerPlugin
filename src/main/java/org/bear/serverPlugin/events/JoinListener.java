@@ -28,7 +28,6 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.sendMessage("hi");
         state.scoreboardManager.createSidebar(player, state.crypto);
 
         CustomModelDataComponent yes = new CustomModelDataComponent() {
@@ -77,7 +76,7 @@ public class JoinListener implements Listener {
                 return Map.of();
             }
         };
-        List<String> phoneList = Arrays.asList("phone");
+        List<String> phoneList = List.of("phone");
         yes.setStrings(phoneList);
 
         // ✅ Give the player a dirt block every time they join

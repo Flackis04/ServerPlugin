@@ -11,12 +11,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class DropListener implements Listener {
 
-    private final PluginState state;
     private final PhoneUI phoneUI;
 
-    public DropListener(PluginState state, PhoneUI phoneUI) {
-        this.state = state;
-        this.phoneUI = new PhoneUI(state);
+    public DropListener(PluginState state) {
+        this.phoneUI = new PhoneUI();
     }
 
     @EventHandler
@@ -29,8 +27,6 @@ public class DropListener implements Listener {
             event.setCancelled(true);
             player.sendMessage("§aYou opened a UI!");
             phoneUI.openPhoneUI(player);
-            player.sendMessage("meta: " + droppedItem.getItemMeta());
-            player.sendMessage("type: " + droppedItem.getType());
         }
     }
 }

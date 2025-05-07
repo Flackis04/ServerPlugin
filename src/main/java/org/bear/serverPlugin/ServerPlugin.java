@@ -22,9 +22,9 @@ public class ServerPlugin extends JavaPlugin {
 
         // Initialize UI components now that PluginState exists
         UpgradeUI upgradeUI = new UpgradeUI(state);
-        SellUI sellUI = new SellUI(state);
+        SellUI sellUI = new SellUI();
         CollectionUI collectionUI = new CollectionUI(state);
-        PhoneUI phoneUI = new PhoneUI(state);
+        PhoneUI phoneUI = new PhoneUI();
 
         // Now, update the PluginState with the actual UI components
         state.upgradeUI = upgradeUI;
@@ -33,10 +33,10 @@ public class ServerPlugin extends JavaPlugin {
         state.phoneUI = phoneUI;
 
         // Register event listeners with the updated PluginState
-        Bukkit.getPluginManager().registerEvents(new DropListener(state, phoneUI), this);
+        Bukkit.getPluginManager().registerEvents(new DropListener(state), this);
         Bukkit.getPluginManager().registerEvents(new JoinListener(state), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListener(state, upgradeUI, sellUI, collectionUI), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListener(state), this);
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }

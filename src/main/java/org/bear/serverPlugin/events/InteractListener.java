@@ -3,7 +3,6 @@ package org.bear.serverPlugin.events;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,7 +10,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +44,7 @@ public class InteractListener implements Listener {
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         ItemMeta itemMeta = itemInHand.getItemMeta();
 
-        if (itemMeta != null && itemMeta.hasCustomModelData() && itemMeta.getCustomModelDataComponent().getStrings().get(0).equals("phone")) {
+        if (itemMeta != null && itemMeta.hasCustomModelData() && itemMeta.getCustomModelDataComponent().getStrings().getFirst().equals("phone")) {
             // Give random material from weighted valuables map
             Material mat = getRandomMaterialFromMap(state.valuables);
             ItemStack item = new ItemStack(mat);
@@ -70,8 +68,6 @@ public class InteractListener implements Listener {
                 // Only update if the material is newly added to the collection
                 if (!state.matInCollection.contains(mat)) {
                     state.matInCollection.add(mat);
-                    player.sendMessage("seen: " + state.seenMaterials);
-                    player.sendMessage("mats: " + state.matInCollection);
                     state.collectionUI.createCollectionMat(mat); // Optional: if needed to build UI items
                     state.collectionUI.updateCollectionUI(player); // Refresh the UI
                 }
@@ -80,7 +76,7 @@ public class InteractListener implements Listener {
             // Add to cooldown and schedule removal
             state.cooldownPlayers.add(uuid);
             Bukkit.getScheduler().runTaskLater(
-                    Bukkit.getPluginManager().getPlugin("ServerPlugin"),
+                    Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
                     () -> state.cooldownPlayers.remove(uuid),
                     (long) state.getDelayTicks()
             );
@@ -148,7 +144,7 @@ public class InteractListener implements Listener {
 
             ItemMeta meta = item.getItemMeta();
             if (meta != null && meta.hasLore()) {
-                for (String line : meta.getLore()) {
+                for (String line : Objects.requireNonNull(meta.getLore())) {
                     if (line != null && line.toLowerCase().contains("sell price:")) {
                         int amount = item.getAmount();
                         foundItems.put(material, foundItems.getOrDefault(material, 0) + amount);
