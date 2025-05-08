@@ -49,7 +49,6 @@ public class CollectionUI {
             meta.setLore(Arrays.asList(
                     ChatColor.DARK_GRAY + "Achieved on: " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()), // Example date
                     (ChatColor.DARK_GRAY + "Click for more info") // Example date
-
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);

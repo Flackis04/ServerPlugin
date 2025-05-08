@@ -10,6 +10,10 @@ public class PluginState {
 
     public int crypto = 0;
     public int delayLevel = 1;
+    public Integer slotLevel = 1;
+    public int maxDelayLevel = 4;
+    public int maxSlotLevel = 16;
+    public boolean genIsActive = false;
 
     public ScoreboardManager scoreboardManager;
     public UpgradeUI upgradeUI;
@@ -17,7 +21,6 @@ public class PluginState {
     public SellUI sellUI;
     public CollectionUI collectionUI;
     public final Set<Material> matInCollection = new HashSet<>();
-    public final Set<UUID> cooldownPlayers = new HashSet<>();
 
     public final List<Material> orderedMats = List.of(
             Material.DIRT, Material.STONE, Material.COAL,
@@ -30,6 +33,7 @@ public class PluginState {
     public final Map<Material, Boolean> seenMaterials;
     public final Map<Material, Integer> sellPrices;
     public final Map<Integer, Integer> delayLevelCosts;
+    public Map<Integer, Integer> slotLevelCosts;
 
     public PluginState(UpgradeUI upgradeUI, SellUI sellUI, CollectionUI collectionUI, ScoreboardManager scoreboardManager) {
         this.upgradeUI = upgradeUI;
@@ -42,22 +46,25 @@ public class PluginState {
         this.valuables = materialUtils.generateExponentialWeights(orderedMats, 0.27);  // Example ratio
         this.sellPrices = materialUtils.generateSellPrices(valuables, 10000);
         this.seenMaterials = materialUtils.generateInitialSeenMap(orderedMats);
-        this.delayLevelCosts = generateDelayLevelCosts(); // maxLevel = 16, baseCost = 80
+        this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 120); // maxLevel = 16, baseCost = 80
+        this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500);
     }
 
-    public float getDelayTicks() {
-        return Math.max(20f - (delayLevel - 1), 5f);
+    public int getDelayTicks() {
+        return Math.max(1, Math.min(15 - (delayLevel * 3), 15));
     }
 
-    private Map<Integer, Integer> generateDelayLevelCosts() {
-        Map<Integer, Integer> delayLevelCosts = new HashMap<>();
 
-        for (int i = 1; i <= 16; i++) {
+    private Map<Integer, Integer>
+    generateLevelCosts(int maxLevel, int baseCostPerLevel) {
+        Map<Integer, Integer> levelCosts = new HashMap<>();
+
+        for (int i = 1; i <= maxLevel; i++) {
             // Example logic: cost increases with delay level
-            int cost = 80 * i; // This is just a simple example; you can adjust the cost calculation
-            delayLevelCosts.put(i, cost);
+            int cost = baseCostPerLevel * i; // This is just a simple example; you can adjust the cost calculation
+            levelCosts.put(i, cost);
         }
 
-        return delayLevelCosts;
+        return levelCosts;
     }
 }

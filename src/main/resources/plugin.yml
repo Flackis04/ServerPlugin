@@ -6,3 +6,6 @@ commands:
   phone:
     description: Gives you the Magic Soil item
     usage: /phone
+  is:
+    description: Teleport to your own island
+    usage: /is

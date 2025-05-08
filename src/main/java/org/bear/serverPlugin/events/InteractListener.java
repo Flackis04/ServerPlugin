@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -25,7 +26,6 @@ public class InteractListener implements Listener {
     public InteractListener(PluginState state) {
         this.state = state;
     }
-
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
         if (event.getAction() != RIGHT_CLICK_AIR && event.getAction() != RIGHT_CLICK_BLOCK) {
@@ -33,67 +33,16 @@ public class InteractListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        // Check cooldown
-        if (state.cooldownPlayers.contains(uuid)) {
-            player.sendMessage("§cWait for cooldown");
-            return;
-        }
 
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         ItemMeta itemMeta = itemInHand.getItemMeta();
 
         if (itemMeta != null && itemMeta.hasCustomModelData() && itemMeta.getCustomModelDataComponent().getStrings().getFirst().equals("phone")) {
-            // Give random material from weighted valuables map
-            Material mat = getRandomMaterialFromMap(state.valuables);
-            ItemStack item = new ItemStack(mat);
-            ItemMeta meta = item.getItemMeta();
-
-            if (meta != null) {
-                // Set a custom description based on the material
-                List<String> lore = new ArrayList<>();
-                String description = "Sell price: " + state.sellPrices.get(mat); // Define your description method
-                lore.add(description);
-
-                meta.setLore(lore);
-                item.setItemMeta(meta);
-            }
-
-            player.getInventory().addItem(item);
-            player.sendMessage("§aYou got " + mat.toString().toLowerCase());
-            state.seenMaterials.put(mat, true);
-
-            if (state.seenMaterials.getOrDefault(mat, false)) {
-                // Only update if the material is newly added to the collection
-                if (!state.matInCollection.contains(mat)) {
-                    state.matInCollection.add(mat);
-                    state.collectionUI.createCollectionMat(mat); // Optional: if needed to build UI items
-                    state.collectionUI.updateCollectionUI(player); // Refresh the UI
-                }
-            }
-
-            // Add to cooldown and schedule removal
-            state.cooldownPlayers.add(uuid);
-            Bukkit.getScheduler().runTaskLater(
-                    Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
-                    () -> state.cooldownPlayers.remove(uuid),
-                    (long) state.getDelayTicks()
-            );
+            event.setCancelled(true);
+            state.phoneUI.openPhoneUI(player);
         }
     }
 
-    private Material getRandomMaterialFromMap(Map<Material, Double> map) {
-        double rand = Math.random();
-        double cumulative = 0.0;
-        for (Map.Entry<Material, Double> entry : map.entrySet()) {
-            cumulative += entry.getValue();
-            if (rand <= cumulative) {
-                return entry.getKey();
-            }
-        }
-        return Material.DIRT; // fallback
-    }
     @EventHandler
     public void onCloseUI(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
@@ -122,7 +71,7 @@ public class InteractListener implements Listener {
                     player.sendMessage("§6" + material + ": §f" + amount + " x " + pricePerItem + "C = §a" + value + "C");
                 }
 
-                player.sendMessage("§aTotal Profit: §2C" + totalProfit);
+                player.sendMessage("§aTotal Profit: §2" + totalProfit + "C");
                 state.crypto = state.crypto + totalProfit;
                 state.scoreboardManager.updateCrypto(player, state.crypto);
             } else {

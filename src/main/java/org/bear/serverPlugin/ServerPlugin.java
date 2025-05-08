@@ -1,11 +1,9 @@
 package org.bear.serverPlugin;
 
 import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.events.DropListener;
-import org.bear.serverPlugin.events.InteractListener;
-import org.bear.serverPlugin.events.InventoryListener;
-import org.bear.serverPlugin.events.JoinListener;
+import org.bear.serverPlugin.events.*;
 import org.bear.serverPlugin.ui.*;
+import org.bear.serverPlugin.world.ChunkIsland;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,7 +22,7 @@ public class ServerPlugin extends JavaPlugin {
         UpgradeUI upgradeUI = new UpgradeUI(state);
         SellUI sellUI = new SellUI();
         CollectionUI collectionUI = new CollectionUI(state);
-        PhoneUI phoneUI = new PhoneUI();
+        PhoneUI phoneUI = new PhoneUI(state);
 
         // Now, update the PluginState with the actual UI components
         state.upgradeUI = upgradeUI;
@@ -33,11 +31,12 @@ public class ServerPlugin extends JavaPlugin {
         state.phoneUI = phoneUI;
 
         // Register event listeners with the updated PluginState
-        Bukkit.getPluginManager().registerEvents(new DropListener(state), this);
         Bukkit.getPluginManager().registerEvents(new JoinListener(state), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new GenListener(state), this);
 
+        getCommand("is").setExecutor(new ChunkIsland());
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }
 }

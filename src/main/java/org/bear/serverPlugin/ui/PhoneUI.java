@@ -1,6 +1,7 @@
 package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
+import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,12 +14,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.List;
 
 public class PhoneUI {
+    private final PluginState state;
+
+    public PhoneUI(PluginState state) {
+        this.state = state;
+    }
+
 
     public void openPhoneUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Phone"));
-        inv.setItem(11, createUpgradesBtn());
-        inv.setItem(13, createSellBtn());
-        inv.setItem(15, createCollectionBtn());
+        inv.setItem(10, createUpgradesBtn());
+        inv.setItem(12, createSellBtn());
+        inv.setItem(14, createCollectionBtn());
+        inv.setItem(16, createActivationBtn());
+
         player.openInventory(inv);
     }
 
@@ -45,7 +54,7 @@ public class PhoneUI {
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Upgrades");
             meta.setLore(List.of(
-                    ChatColor.DARK_GRAY + "Sell duplicates"
+                    ChatColor.DARK_GRAY + "Manage Upgrades"
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
@@ -62,6 +71,22 @@ public class PhoneUI {
             meta.setDisplayName(ChatColor.GRAY + "Collection");
             meta.setLore(List.of(
                     ChatColor.DARK_GRAY + "Blocks you've discovered"
+            ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createActivationBtn() {
+        ItemStack item = new ItemStack(Material.REDSTONE);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "Activation");
+            meta.setLore(List.of(
+                    ChatColor.DARK_GRAY + "state: " + state.genIsActive
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);

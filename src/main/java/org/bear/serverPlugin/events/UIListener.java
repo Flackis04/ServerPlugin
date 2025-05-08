@@ -1,7 +1,6 @@
 package org.bear.serverPlugin.events;
 
 import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.ui.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,11 +11,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
-public class InventoryListener implements Listener {
+public class UIListener implements Listener {
 
     private final PluginState state;
 
-    public InventoryListener(PluginState state) {
+    public UIListener(PluginState state) {
         this.state = state;
     }
 
@@ -53,14 +52,23 @@ public class InventoryListener implements Listener {
                 state.collectionUI.updateCollectionUI(player);
             }
 
+            if (clickedItem.getType() == Material.REDSTONE &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Activation")) {
+                state.genIsActive = !state.genIsActive;
+                state.phoneUI.openPhoneUI(player);
+                player.sendMessage("gens activated: " + state.genIsActive);
+            }
+
             if (clickedItem.getType() == Material.EMERALD_BLOCK &&
                     clickedItem.hasItemMeta() &&
                     clickedItem.getItemMeta().hasDisplayName() &&
                     clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "CPU")) {
-                if (state.delayLevel >= 16) {
+                if (state.delayLevel >= state.maxDelayLevel) {
                     player.sendMessage(ChatColor.RED + "There exists no better CPU at the moment");
                 } else {
-                    int price = state.delayLevelCosts.getOrDefault(state.delayLevel, 0);
+                    int price = state.delayLevelCosts.getOrDefault(state.delayLevel, 1);
                     if (state.crypto >= price) {
                         state.crypto -= price;
                         state.delayLevel += 1;
@@ -74,7 +82,6 @@ public class InventoryListener implements Listener {
                     }
                 }
             }
-
         }
     }
 }

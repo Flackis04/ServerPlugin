@@ -1,98 +1,47 @@
 package org.bear.serverPlugin.events;
 
 import org.bear.serverPlugin.data.PluginState;
-import org.bukkit.Color;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.components.CustomModelDataComponent;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 
 public class JoinListener implements Listener {
+    private final PluginState state;
 
-    private final PluginState state; // Declare a field to store the plugin state
-
-    // Constructor to initialize the PluginState
     public JoinListener(PluginState pluginState) {
-        this.state = pluginState; // Assign the provided PluginState to the class field
+        this.state = pluginState;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        state.scoreboardManager.createSidebar(player, state.crypto);
 
-        CustomModelDataComponent yes = new CustomModelDataComponent() {
-            @Override
-            public @NotNull List<Float> getFloats() {
-                return List.of();
-            }
-
-            @Override
-            public void setFloats(@NotNull List<Float> list) {
-
-            }
-
-            @Override
-            public @NotNull List<Boolean> getFlags() {
-                return List.of();
-            }
-
-            @Override
-            public void setFlags(@NotNull List<Boolean> list) {
-
-            }
-
-            @Override
-            public @NotNull List<String> getStrings() {
-                return List.of();
-            }
-
-            @Override
-            public void setStrings(@NotNull List<String> list) {
-
-            }
-
-            @Override
-            public @NotNull List<Color> getColors() {
-                return List.of();
-            }
-
-            @Override
-            public void setColors(@NotNull List<Color> list) {
-
-            }
-
-            @Override
-            public @NotNull Map<String, Object> serialize() {
-                return Map.of();
-            }
-        };
-        List<String> phoneList = List.of("phone");
-        yes.setStrings(phoneList);
-
-        // ✅ Give the player a dirt block every time they join
         ItemStack phone = new ItemStack(Material.DIRT);
-        ItemMeta meta = phone.getItemMeta();
-        if (meta != null) {
-            // Set the custom model data (e.g., 123)
-            meta.setCustomModelDataComponent(yes);
 
-            // Set the item meta back to the item
-            phone.setItemMeta(meta);
-        }
+        CustomModelData modelData = CustomModelData
+                .customModelData()           // obtain a new builder :contentReference[oaicite:0]{index=0}
+                .addString("phone")          // add your identifier :contentReference[oaicite:1]{index=1}
+                .build();                    // finalize the component
 
-        //temp
-        ItemStack temp = new ItemStack(Material.DIRT);
+        phone.setData(
+                DataComponentTypes.CUSTOM_MODEL_DATA,  // controls the minecraft:custom_model_data NBT tag :contentReference[oaicite:2]{index=2}
+                modelData
+        );
+        if (!player.getInventory().contains(phone))
+            player.getInventory().addItem(phone);
+        ItemStack gen = new ItemStack(Material.IRON_BLOCK);
+        if (!player.getInventory().contains(gen))
+            player.getInventory().addItem(gen);
 
-        player.getInventory().addItem(temp);
+        // (Optional) Initialize your scoreboard sidebar
+        state.scoreboardManager.createSidebar(player, state.crypto);
     }
+
+    public void onPlayerDeath
+
 }
