@@ -1,23 +1,18 @@
 package org.bear.serverPlugin.events;
 
 import org.bear.serverPlugin.data.PluginState;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bear.serverPlugin.util.ItemUtils;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.Material;
 
-import java.util.*;
-
-import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
-import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
+import java.util.Objects;
 
 public class InteractListener implements Listener {
 
@@ -28,81 +23,30 @@ public class InteractListener implements Listener {
     }
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
-        if (event.getAction() != RIGHT_CLICK_AIR && event.getAction() != RIGHT_CLICK_BLOCK) {
-            return;
-        }
+        // Only handle right-click with MAIN_HAND to avoid duplicate trigger from OFF_HAND
+        if (!Objects.equals(event.getHand(), EquipmentSlot.HAND)) return;
 
-        Player player = event.getPlayer();
+        if (event.getAction().isRightClick()) {
+            Player player = event.getPlayer();
+            ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        ItemMeta itemMeta = itemInHand.getItemMeta();
+            // Handle phone right-click
+            if (itemInHand.equals(ItemUtils.getPhone())) {
+                event.setCancelled(true);
+                state.phoneUI.openPhoneUI(player);
+                return;
+            }
 
-        if (itemMeta != null && itemMeta.hasCustomModelData() && itemMeta.getCustomModelDataComponent().getStrings().getFirst().equals("phone")) {
-            event.setCancelled(true);
-            state.phoneUI.openPhoneUI(player);
-        }
-    }
+            Block clickedBlock = event.getClickedBlock();
+            if (clickedBlock == null) return;
 
-    @EventHandler
-    public void onCloseUI(InventoryCloseEvent event) {
-        Player player = (Player) event.getPlayer();
+            Location playerGenLoc = state.getPlayerData(player.getUniqueId()).getGenLocation();
+            if (playerGenLoc == null) return;
 
-        // Get the title as plain text
-        String title = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
-                .serialize(event.getView().title());
-
-        // Check if it's the Sell UI
-        if (title.equalsIgnoreCase("Sell")) {
-
-            // Call getMaterialIntegerMap with the sellPrices
-            Map<Material, Integer> foundItems = getMaterialIntegerMap(event, state.sellPrices);
-
-            if (!foundItems.isEmpty()) {
-                int totalProfit = 0;
-
-                // Calculate and print the total profit
-                for (Map.Entry<Material, Integer> entry : foundItems.entrySet()) {
-                    Material material = entry.getKey();
-                    int amount = entry.getValue();
-                    int pricePerItem = state.sellPrices.getOrDefault(material, 0);
-                    int value = amount * pricePerItem;
-                    totalProfit += value;
-
-                    player.sendMessage("§6" + material + ": §f" + amount + " x " + pricePerItem + "C = §a" + value + "C");
-                }
-
-                player.sendMessage("§aTotal Profit: §2" + totalProfit + "C");
-                state.crypto = state.crypto + totalProfit;
-                state.scoreboardManager.updateCrypto(player, state.crypto);
-            } else {
-                player.sendMessage("§cNo sellable valuables found.");
+            if (ItemUtils.isGen(clickedBlock) && clickedBlock.getLocation().equals(playerGenLoc)) {
+                clickedBlock.setType(Material.AIR);
+                player.getInventory().addItem(ItemUtils.getGen());
             }
         }
-    }
-
-
-    private @NotNull Map<Material, Integer> getMaterialIntegerMap(@NotNull InventoryCloseEvent event, @NotNull Map<Material, Integer> sellPrices) {
-        Inventory closedInventory = event.getInventory();
-        Map<Material, Integer> foundItems = new HashMap<>();
-
-        for (ItemStack item : closedInventory.getContents()) {
-            if (item == null || item.getType() == Material.AIR) continue;
-            Material material = item.getType();
-
-            if (!state.valuables.containsKey(material)) continue;
-
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null && meta.hasLore()) {
-                for (String line : Objects.requireNonNull(meta.getLore())) {
-                    if (line != null && line.toLowerCase().contains("sell price:")) {
-                        int amount = item.getAmount();
-                        foundItems.put(material, foundItems.getOrDefault(material, 0) + amount);
-                        break; // No need to check more lore lines once the sell price is found
-                    }
-                }
-            }
-        }
-
-        return foundItems;
     }
 }

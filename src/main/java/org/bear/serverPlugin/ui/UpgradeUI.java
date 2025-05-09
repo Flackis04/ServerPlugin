@@ -2,6 +2,7 @@ package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
 import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.data.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -24,113 +25,99 @@ public class UpgradeUI {
 
     public void openUpgradeUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Upgrades"));
-        inv.setItem(22, createCpuItem());
-        inv.setItem(39, createSlotItem());
-        inv.setItem(41, createIslandItem());
+        inv.setItem(22, createCpuItem(player));
+        inv.setItem(39, createSlotItem(player));
+        inv.setItem(41, createIslandItem(player));  // Using Island Expansion with its own level
         player.openInventory(inv);
     }
 
-    public ItemStack createCpuItem() {
+    public ItemStack createCpuItem(Player player) {
+        PlayerData data = state.getPlayerData(player.getUniqueId());
+        int currentLevel = data.delayLevel;
+        Map<Integer, Integer> costs = state.delayLevelCosts;
+        int cost = costs.getOrDefault(currentLevel, 0);
+        boolean canAfford = data.crypto >= cost;
+
         ItemStack item = new ItemStack(Material.EMERALD_BLOCK);
         ItemMeta meta = item.getItemMeta();
-
-        Map<Integer, Integer> delayLevelCosts = state.delayLevelCosts;
-
-// Get the cost for the current delayLevel
-        int currentCost = delayLevelCosts.getOrDefault(state.delayLevel, 0);
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "CPU");
 
-            boolean canAfford = state.crypto >= currentCost;
-            String costText;
+            String costText = currentLevel == state.maxDelayLevel
+                    ? ChatColor.RED + "Max level reached"
+                    : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
-            // Check if max level is reached
-            if (state.delayLevel == state.maxDelayLevel) {
-                costText = ChatColor.RED + "Max level reached"; // Display max level reached if on max level
-            } else {
-                costText = (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + currentCost; // Otherwise, show the cost
-            }
-
-            // Set lore with the appropriate message
             meta.setLore(Arrays.asList(
                     ChatColor.DARK_GRAY + "Makes your gens faster",
-                    ChatColor.GRAY + "Level: " + state.delayLevel + " (" + (state.getDelayTicks() / 20f) + "s)",
-                    costText // Add the cost or "Max level reached"
+                    ChatColor.GRAY + "Level: " + currentLevel + " (" + (state.getDelayTicks(player) / 20f) + "s)",
+                    costText
             ));
 
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }
+
         return item;
     }
 
-    public ItemStack createSlotItem() {
+    public ItemStack createSlotItem(Player player) {
+        PlayerData data = state.getPlayerData(player.getUniqueId());
+        int currentLevel = data.slotLevel;
+        Map<Integer, Integer> costs = state.slotLevelCosts;
+        int cost = costs.getOrDefault(currentLevel, 0);
+        boolean canAfford = data.crypto >= cost;
+
         ItemStack item = new ItemStack(Material.BARREL);
         ItemMeta meta = item.getItemMeta();
-
-        Map<Integer, Integer> slotLevelCosts = state.slotLevelCosts;
-
-// Get the cost for the current delayLevel
-        int currentCost = slotLevelCosts.getOrDefault(state.slotLevel, 0);
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Slots");
 
-            boolean canAfford = state.crypto >= currentCost;
-            String costText;
+            String costText = currentLevel == state.maxSlotLevel
+                    ? ChatColor.RED + "Max level reached"
+                    : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
-            // Check if max level is reached
-            if (state.slotLevel == state.maxSlotLevel) {
-                costText = ChatColor.RED + "Max level reached"; // Display max level reached if on max level
-            } else {
-                costText = (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + currentCost; // Otherwise, show the cost
-            }
-
-            // Set lore with the appropriate message
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Enables you to place an additional Gen per level",
-                    ChatColor.GRAY + "Level: " + state.slotLevel,
-                    costText // Add the cost or "Max level reached"
+                    ChatColor.DARK_GRAY + "Place an additional Gen per level",
+                    ChatColor.GRAY + "Level: " + currentLevel,
+                    costText
             ));
 
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }
+
         return item;
     }
-    public ItemStack createIslandItem() {
+
+    public ItemStack createIslandItem(Player player) {
+        PlayerData data = state.getPlayerData(player.getUniqueId());
+        int currentLevel = data.islandExpansionLevel;  // Now using islandLevel
+        Map<Integer, Integer> costs = state.islandExpansionLevelCosts;  // islandLevelCosts map
+        int cost = costs.getOrDefault(currentLevel, 0);
+        boolean canAfford = data.crypto >= cost;
+
         ItemStack item = new ItemStack(Material.GRASS_BLOCK);
         ItemMeta meta = item.getItemMeta();
-
-        Map<Integer, Integer> delayLevelCosts = state.delayLevelCosts;
-
-// Get the cost for the current delayLevel
-        int currentCost = delayLevelCosts.getOrDefault(state.delayLevel, 0);
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Island Expansion");
 
-            boolean canAfford = state.crypto >= currentCost;
-            String costText;
+            String costText = currentLevel == state.maxIslandExpansionLevel  // Ensure max level is tracked
+                    ? ChatColor.RED + "Max level reached"
+                    : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
-            // Check if max level is reached
-            if (state.delayLevel == state.maxDelayLevel) {
-                costText = ChatColor.RED + "Max level reached"; // Display max level reached if on max level
-            } else {
-                costText = (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + currentCost; // Otherwise, show the cost
-            }
-
-            // Set lore with the appropriate message
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Enables you to add a chunk to your island per level",
-                    ChatColor.GRAY + "Level: " + state.delayLevel + " (" + (state.getDelayTicks() / 20f) + "s)",
-                    costText // Add the cost or "Max level reached"
+                    ChatColor.DARK_GRAY + "Add a chunk to your island per level",
+                    ChatColor.GRAY + "Level: " + currentLevel,  // Show current island level
+                    costText
             ));
 
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }
+
         return item;
     }
 }

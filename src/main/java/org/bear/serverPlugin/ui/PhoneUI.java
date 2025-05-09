@@ -1,6 +1,7 @@
 package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
+import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,7 +27,7 @@ public class PhoneUI {
         inv.setItem(10, createUpgradesBtn());
         inv.setItem(12, createSellBtn());
         inv.setItem(14, createCollectionBtn());
-        inv.setItem(16, createActivationBtn());
+        inv.setItem(16, createActivationBtn(player));
 
         player.openInventory(inv);
     }
@@ -79,14 +80,14 @@ public class PhoneUI {
         return item;
     }
 
-    private ItemStack createActivationBtn() {
+    private ItemStack createActivationBtn(Player player) {
         ItemStack item = new ItemStack(Material.REDSTONE);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
             meta.setDisplayName(ChatColor.GRAY + "Activation");
             meta.setLore(List.of(
-                    ChatColor.DARK_GRAY + "state: " + state.genIsActive
+                    ChatColor.DARK_GRAY + "state: " + state.getPlayerData(player.getUniqueId()).genIsActive
             ));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);

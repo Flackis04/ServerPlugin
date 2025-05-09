@@ -1,6 +1,8 @@
 package org.bear.serverPlugin.events;
 
+import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.util.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,25 +25,24 @@ import java.util.*;
 public class GenListener implements Listener {
     private final PluginState state;
 
-    // Tracks all placed iron block locations
-    private final Set<Location> ironGenLocations = new HashSet<>();
-
     public GenListener(PluginState state) {
         this.state = state;
-
-        // Start repeating task for generators
-        startGenLoop();
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         Block placedBlock = event.getBlock();
+        Player player = event.getPlayer();
 
-        if (placedBlock.getType() == Material.IRON_BLOCK) {
-            Location loc = placedBlock.getLocation();
-            ironGenLocations.add(loc);
+        // Get the item the player is holding
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        // Check if the meta contains custom model data or a tag (replace 123456 with your custom model data)
+        if (itemInHand.equals(ItemUtils.getGen())) { //isgen, not equals
+            Location loc = placedBlock.getLocation(); // or clicked block, etc.
+            state.placeGenForPlayer(player, loc);
         }
     }
+
 
     @EventHandler
     public void onEntityPickupItem(EntityPickupItemEvent event) {
@@ -63,77 +64,15 @@ public class GenListener implements Listener {
             }
         }
 
+        PlayerData data = state.getPlayerData(player.getUniqueId());
+
         if (hasSellPrice && state.orderedMats.contains(mat) && state.seenMaterials.getOrDefault(mat, false)) {
-            if (!state.matInCollection.contains(mat)) {
-                state.matInCollection.add(mat);
+            if (!data.matInCollection.contains(mat)) {
+                data.matInCollection.add(mat);
                 state.collectionUI.createCollectionMat(mat);
                 //state.collectionUI.updateCollectionUI(player);
             }
         }
 
-    }
-
-
-    private BukkitRunnable genLoopTask;
-
-    private void startGenLoop() {
-        if (genLoopTask != null) {
-            genLoopTask.cancel(); // Cancel existing task if running
-        }
-
-        long initialDelay = state.getDelayTicks(); // Store initial delay
-
-        genLoopTask = new BukkitRunnable() {
-            private long lastDelay = initialDelay;
-
-            @Override
-            public void run() {
-                // Check if delay has changed
-                long currentDelay = state.getDelayTicks();
-                if (currentDelay != lastDelay) {
-                    this.cancel(); // Cancel this task
-                    Bukkit.getScheduler().runTaskLater(
-                            Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
-                            () -> startGenLoop(), 1L // Restart loop with new delay
-                    );
-                    return;
-                }
-
-                if (!state.genIsActive) return;
-
-                for (Location loc : ironGenLocations) {
-                    Block baseBlock = loc.getBlock();
-                    if (baseBlock.getType() != Material.IRON_BLOCK) continue;
-
-                    Block blockAbove = baseBlock.getRelative(BlockFace.UP);
-                    if (blockAbove.getType() == Material.AIR) {
-                        MaterialUtils genDropMats = new MaterialUtils();
-                        Material dropMaterial = genDropMats.getRandomMaterialFromMap(state.valuables);
-
-                        ItemStack item = new ItemStack(dropMaterial);
-                        var meta = item.getItemMeta();
-                        if (meta != null) {
-                            List<String> lore = new ArrayList<>();
-                            String description = "Sell price: " + state.sellPrices.getOrDefault(dropMaterial, 0);
-                            lore.add(description);
-                            meta.setLore(lore);
-                            item.setItemMeta(meta);
-                        }
-
-                        var dropped = blockAbove.getWorld().dropItem(
-                                blockAbove.getLocation().add(0.5, 0, 0.5),
-                                item
-                        );
-                        dropped.setVelocity(new Vector(0, 0.45, 0));
-                    }
-                }
-            }
-        };
-
-        genLoopTask.runTaskTimer(
-                Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
-                0L,
-                initialDelay
-        );
     }
 }
