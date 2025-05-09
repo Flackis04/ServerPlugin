@@ -5,7 +5,6 @@ import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.util.InventoryUtils;
 import org.bear.serverPlugin.util.ItemUtils;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,7 +14,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class JoinListener implements Listener {
     private final PluginState state;
@@ -50,7 +48,7 @@ public class JoinListener implements Listener {
         if (playerData == null) {
             // Create default player data if none exists
             playerData = new PlayerData();
-            database.insertOrUpdatePlayerData(playerId, playerData);  // Save default data if no data exists for the player
+            database.updatePlayerData(playerId, playerData);  // Save default data if no data exists for the player
         }
 
         // Now, playerData should never be null here
@@ -66,8 +64,8 @@ public class JoinListener implements Listener {
         // Retrieve the player's data from PluginState
         PlayerData playerData = state.getPlayerData(player.getUniqueId());
 
-        // Save the player's data to the database using the insertOrUpdatePlayerData method
-        database.insertOrUpdatePlayerData(playerId, playerData);
+        // Save the player's data to the database using the updatePlayerData method
+        database.updatePlayerData(playerId, playerData);
 
         // Optionally, disconnect from the database if needed (optional)
     }

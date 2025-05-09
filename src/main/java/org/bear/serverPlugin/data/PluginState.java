@@ -26,6 +26,8 @@ public class PluginState {
     public CollectionUI collectionUI;
     public PhoneUI phoneUI;
     public final ScoreboardManager scoreboardManager;
+    public Database database;
+
 
     // Shared item-related data
     public final List<Material> orderedMats = List.of(
@@ -48,20 +50,22 @@ public class PluginState {
 
     // Per-player data map
     public final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
-    private final Set<Location> ironGenLocations = new HashSet<>();
+    private final Set<Location> ironGenLocations = new HashSet<>(); //
 
     public PluginState(
             UpgradeUI upgradeUI,
             SellUI sellUI,
             CollectionUI collectionUI,
             PhoneUI phoneUI,
-            ScoreboardManager scoreboardManager
+            ScoreboardManager scoreboardManager,
+            Database database
     ) {
         this.upgradeUI = upgradeUI;
         this.sellUI = sellUI;
         this.collectionUI = collectionUI;
         this.phoneUI = phoneUI;
         this.scoreboardManager = scoreboardManager;
+        this.database = database;
 
         MaterialUtils materialUtils = new MaterialUtils();
 
@@ -74,7 +78,13 @@ public class PluginState {
     }
 
     public PlayerData getPlayerData(UUID uuid) {
-        return playerDataMap.computeIfAbsent(uuid, id -> new PlayerData());
+        PlayerData playerData = playerDataMap.get(uuid);
+        if(playerData==null){
+            database.insertPlayerData(uuid.hashCode());
+            playerData = database.loadPlayerData(uuid.hashCode());
+            playerDataMap.put(uuid, playerData);
+        }
+        return playerData;
     }
 
     public int getDelayTicks(Player player) {
@@ -171,5 +181,9 @@ public class PluginState {
                 0L,
                 initialDelay
         );
+    }
+
+    public Set<Location> getIronGenLocations() {
+        return ironGenLocations;
     }
 }
