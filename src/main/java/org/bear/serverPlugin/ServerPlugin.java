@@ -17,24 +17,19 @@ public class ServerPlugin extends JavaPlugin {
         // Initialize the ScoreboardManager
         ScoreboardManager scoreboardManager = new ScoreboardManager();
 
-        // Step 1: Create an empty PluginState with null UIs (just for now)
-        PluginState state = new PluginState(null, null, null, null, scoreboardManager);
-
-        // Step 2: Now initialize all UI components using the full state
-        UpgradeUI upgradeUI = new UpgradeUI(state);
-        SellUI sellUI = new SellUI();
-        CollectionUI collectionUI = new CollectionUI(state);
-        PhoneUI phoneUI = new PhoneUI(state);
-
-        // Step 3: Set those UIs back into the PluginStat
-        state.upgradeUI = upgradeUI;
-        state.sellUI = sellUI;
-        state.collectionUI = collectionUI;
-        state.phoneUI = phoneUI;
-
         database = new Database();
         database.connect();  // Connect to the database
         database.createTable();  // Create the table if it doesn't exist
+
+        // Step 1: Create an empty PluginState with null UIs (just for now)
+        PluginState state = new PluginState(null, null, null, null, scoreboardManager, database);
+
+        // Step 3: Set those UIs back into the PluginStat
+        state.upgradeUI = new UpgradeUI(state);
+        state.sellUI = new SellUI();
+        state.collectionUI = new CollectionUI(state);
+        state.phoneUI = new PhoneUI(state);
+
         // Step 4: Register events using the complete state
         Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);

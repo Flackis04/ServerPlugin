@@ -61,51 +61,51 @@ public class Database {
             System.err.println("Table creation failed: " + e.getMessage());
         }
     }
-
-    public void insertOrUpdatePlayerData(int playerId, PlayerData playerData) {
-        // SQL query to insert or update player data
-        String sql = "INSERT INTO player_data (id, crypto, delayLevel, slotLevel, islandExpansionLevel, genIsActive, " +
+    public void insertPlayerData(int playerId){
+        String sql = "INSERT OR IGNORE INTO player_data (id, crypto, delayLevel, slotLevel, islandExpansionLevel, genIsActive, " +
                 "genLocation_x, genLocation_y, genLocation_z, genLocation_world, matInCollection, inventory_items) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT(id) DO UPDATE SET " +
-                "crypto = ?, delayLevel = ?, slotLevel = ?, islandExpansionLevel = ?, genIsActive = ?, " +
-                "genLocation_x = ?, genLocation_y = ?, genLocation_z = ?, genLocation_world = ?, matInCollection = ?, inventory_items = ?";
-
+                "VALUES (?, 0, 1, 1, 1, 0, null, null, null, null, null, null)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             // Set the values for insertion
             stmt.setInt(1, playerId);  // 'id' as playerId
-            stmt.setInt(2, playerData.crypto);
-            stmt.setInt(3, playerData.delayLevel);
-            stmt.setInt(4, playerData.slotLevel);
-            stmt.setInt(5, playerData.islandExpansionLevel);
-            stmt.setInt(6, playerData.genIsActive ? 1 : 0);  // Store as 1 for true, 0 for false
-            stmt.setDouble(7, playerData.getGenLocation().getX());
-            stmt.setDouble(8, playerData.getGenLocation().getY());
-            stmt.setDouble(9, playerData.getGenLocation().getZ());
-            stmt.setString(10, playerData.getGenLocation().getWorld().getName());  // World name
+
+            stmt.executeUpdate();
+            System.out.println("Player data inserted.");
+        } catch (SQLException e) {
+            System.err.println("Insert failed: " + e.getMessage());
+        }
+    }
+
+    public void updatePlayerData(int playerId, PlayerData playerData) {
+        // SQL query to insert or update player data
+        String sql = "UPDATE player_data SET " +
+                "crypto = ?, delayLevel = ?, slotLevel = ?, islandExpansionLevel = ?, genIsActive = ?, " +
+                "genLocation_x = ?, genLocation_y = ?, genLocation_z = ?, genLocation_world = ?, matInCollection = ?, inventory_items = ? " +
+                "WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            // Set the values for insertion
+            stmt.setInt(1, playerData.crypto);
+            stmt.setInt(2, playerData.delayLevel);
+            stmt.setInt(3, playerData.slotLevel);
+            stmt.setInt(4, playerData.islandExpansionLevel);
+            stmt.setInt(5, playerData.genIsActive ? 1 : 0);  // Store as 1 for true, 0 for false
+            Location genlocation = playerData.getGenLocation();
+            stmt.setDouble(6, genlocation != null ? genlocation.getX() : null);
+            stmt.setDouble(7, genlocation != null ? genlocation.getY() : null);
+            stmt.setDouble(8, genlocation != null ? genlocation.getZ() : null);
+            stmt.setString(9, genlocation != null ? genlocation.getWorld().getName() : null);
 
             // Serialize Set<Material> into a comma-separated String
             String materialsString = String.join(",", playerData.matInCollection.stream()
                     .map(Material::name)
                     .toArray(String[]::new));
-            stmt.setString(11, materialsString);
+            stmt.setString(10, materialsString);
 
             // Serialize inventory items into a string (using InventoryUtils.serializeInventory())
             String serializedInventory = InventoryUtils.serializeInventory(playerData.getInventoryItems());
-            stmt.setString(12, serializedInventory);
-
-            // Set the values for updating (for the ON CONFLICT clause)
-            stmt.setInt(13, playerData.crypto);
-            stmt.setInt(14, playerData.delayLevel);
-            stmt.setInt(15, playerData.slotLevel);
-            stmt.setInt(16, playerData.islandExpansionLevel);
-            stmt.setInt(17, playerData.genIsActive ? 1 : 0);
-            stmt.setDouble(18, playerData.getGenLocation().getX());
-            stmt.setDouble(19, playerData.getGenLocation().getY());
-            stmt.setDouble(20, playerData.getGenLocation().getZ());
-            stmt.setString(21, playerData.getGenLocation().getWorld().getName());
-            stmt.setString(22, materialsString);
-            stmt.setString(23, serializedInventory);  // Update inventory column
+            stmt.setString(11, serializedInventory);
+            stmt.setInt(12, playerId);  // 'id' as playerId
 
             // Execute the query
             stmt.executeUpdate();
@@ -117,7 +117,7 @@ public class Database {
 
     public PlayerData loadPlayerData(int playerId) {
         String sql = "SELECT * FROM player_data WHERE id = ?";
-        PlayerData playerData = null;
+        PlayerData playerData = new PlayerData();
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, playerId);  // Set the player ID as a parameter
@@ -180,7 +180,7 @@ public class Database {
         } catch (SQLException e) {
             System.err.println("Load player data failed: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
+            throw e;
         }
 
         return playerData;
