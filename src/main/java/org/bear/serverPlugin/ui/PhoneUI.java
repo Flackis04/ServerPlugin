@@ -1,7 +1,6 @@
 package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
-import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

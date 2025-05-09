@@ -42,8 +42,7 @@ public class JoinListener implements Listener {
 
         int playerId = player.getUniqueId().hashCode();
 
-        // Connect to the database
-        database.connect();
+
 
         // Load player data from the database
         PlayerData playerData = database.loadPlayerData(playerId);
@@ -71,7 +70,6 @@ public class JoinListener implements Listener {
         database.insertOrUpdatePlayerData(playerId, playerData);
 
         // Optionally, disconnect from the database if needed (optional)
-        database.disconnect();
     }
 
     @EventHandler
