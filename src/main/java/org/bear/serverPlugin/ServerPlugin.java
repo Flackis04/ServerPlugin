@@ -26,7 +26,7 @@ public class ServerPlugin extends JavaPlugin {
         CollectionUI collectionUI = new CollectionUI(state);
         PhoneUI phoneUI = new PhoneUI(state);
 
-        // Step 3: Set those UIs back into the PluginState
+        // Step 3: Set those UIs back into the PluginStat
         state.upgradeUI = upgradeUI;
         state.sellUI = sellUI;
         state.collectionUI = collectionUI;
