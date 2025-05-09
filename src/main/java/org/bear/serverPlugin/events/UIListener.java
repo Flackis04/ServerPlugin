@@ -79,6 +79,7 @@ public class UIListener implements Listener {
                         state.getPlayerData(player.getUniqueId()).crypto -= price;
                         state.getPlayerData(player.getUniqueId()).delayLevel += 1;
 
+
                         player.sendMessage("New CPU chip installed: Intel Core i" + state.getPlayerData(player.getUniqueId()).delayLevel);
                         state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
                         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);

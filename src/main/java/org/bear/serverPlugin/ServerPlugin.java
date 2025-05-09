@@ -1,5 +1,6 @@
 package org.bear.serverPlugin;
 
+import org.bear.serverPlugin.data.Database;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.events.*;
 import org.bear.serverPlugin.ui.*;
@@ -9,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerPlugin extends JavaPlugin {
+    private Database database;
 
     @Override
     public void onEnable() {
@@ -30,8 +32,11 @@ public class ServerPlugin extends JavaPlugin {
         state.collectionUI = collectionUI;
         state.phoneUI = phoneUI;
 
+        database = new Database();
+        database.connect();  // Connect to the database
+        database.createTable();  // Create the table if it doesn't exist
         // Step 4: Register events using the complete state
-        Bukkit.getPluginManager().registerEvents(new JoinListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new GenListener(state), this);
@@ -40,5 +45,12 @@ public class ServerPlugin extends JavaPlugin {
         getCommand("is").setExecutor(new ChunkIsland());
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
+    }
+    @Override
+    public void onDisable() {
+        // Ensure to disconnect when the plugin is disabled
+        if (database != null) {
+            database.disconnect();
+        }
     }
 }
