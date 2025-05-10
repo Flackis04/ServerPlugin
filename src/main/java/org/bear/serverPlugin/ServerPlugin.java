@@ -1,6 +1,7 @@
 package org.bear.serverPlugin;
 
 import org.bear.serverPlugin.data.Database;
+import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.events.*;
 import org.bear.serverPlugin.ui.*;
@@ -36,8 +37,10 @@ public class ServerPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new GenListener(state), this);
 
-        // Register commands
+        PlayerData player = new PlayerData();
+
         getCommand("is").setExecutor(new ChunkIsland());
+        getCommand("reset").setExecutor(player.reset());
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }

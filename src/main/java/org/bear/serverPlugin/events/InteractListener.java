@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
+import org.bukkit.inventory.MainHand;
 
 import java.util.Objects;
 
@@ -44,8 +45,11 @@ public class InteractListener implements Listener {
             if (playerGenLoc == null) return;
 
             if (ItemUtils.isGen(clickedBlock) && clickedBlock.getLocation().equals(playerGenLoc)) {
+                if (player.isSneaking()) return;
+                if (itemInHand.getType().isBlock()) return;
                 clickedBlock.setType(Material.AIR);
                 player.getInventory().addItem(ItemUtils.getGen());
+                state.getPlayerData(player.getUniqueId()).gensPlaced -= 1;
             }
         }
     }

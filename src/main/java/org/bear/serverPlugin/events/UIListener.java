@@ -89,6 +89,29 @@ public class UIListener implements Listener {
                     }
                 }
             }
+
+            if (clickedItem.getType() == Material.BARREL &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Storage")) {
+                if (state.getPlayerData(player.getUniqueId()).slotLevel >= state.maxSlotLevel) {
+                    player.sendMessage(ChatColor.RED + "Your Storage is maxed out brother");
+                } else {
+                    int price = state.slotLevelCosts.getOrDefault(state.getPlayerData(player.getUniqueId()).slotLevel, 1);
+                    if (state.getPlayerData(player.getUniqueId()).crypto >= price) {
+                        state.getPlayerData(player.getUniqueId()).crypto -= price;
+                        state.getPlayerData(player.getUniqueId()).slotLevel += 1;
+
+
+                        player.sendMessage("Storage count increased to " + state.getPlayerData(player.getUniqueId()).slotLevel);
+                        state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+                        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+                        state.upgradeUI.openUpgradeUI(player);
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Not enough crypto!");
+                    }
+                }
+            }
         }
     }
 

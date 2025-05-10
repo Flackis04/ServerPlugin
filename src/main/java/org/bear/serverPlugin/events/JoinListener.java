@@ -32,11 +32,12 @@ public class JoinListener implements Listener {
         state.scoreboardManager.createSidebar(player, state.getPlayerData(player.getUniqueId()).crypto);
 
         // Give the player their items if they don't have them
-        if (!player.getInventory().contains(ItemUtils.getPhone()))
+        if (!player.getInventory().contains(ItemUtils.getPhone())) {
             player.getInventory().addItem(ItemUtils.getPhone());
-
-        if (!player.getInventory().contains(ItemUtils.getGen()))
+        }
+        if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).gensPlaced == 0) {
             player.getInventory().addItem(ItemUtils.getGen());
+        }
 
         int playerId = player.getUniqueId().hashCode();
 
@@ -75,7 +76,9 @@ public class JoinListener implements Listener {
         Player player = event.getPlayer();
         // Ensure the player gets the phone and gen on respawn
         player.getInventory().addItem(ItemUtils.getPhone());
-        player.getInventory().addItem(ItemUtils.getGen());
+        if (state.getPlayerData(player.getUniqueId()).gensPlaced == 0) {
+            player.getInventory().addItem(ItemUtils.getGen());
+        }
     }
 
     @EventHandler

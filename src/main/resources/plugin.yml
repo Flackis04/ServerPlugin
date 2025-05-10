@@ -3,9 +3,9 @@ main: org.bear.serverPlugin.ServerPlugin
 version: 1.0
 api-version: 1.21
 commands:
-  phone:
-    description: Gives you the Magic Soil item
-    usage: /phone
   is:
     description: Teleport to your own island
     usage: /is
+  reset:
+    description: resets player variables
+    usage: /reset

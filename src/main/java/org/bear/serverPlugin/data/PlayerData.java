@@ -2,7 +2,9 @@ package org.bear.serverPlugin.data;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,9 +17,10 @@ public class PlayerData {
     public int slotLevel = 1;
     public int islandExpansionLevel = 1;
     public boolean genIsActive = false;
+    public int gensPlaced = 0;
 
     // Store materials in collection
-    public final Set<Material> matInCollection = new HashSet<>();
+    public Set<Material> matInCollection = new HashSet<>();
 
     // Store generator location per player
     private Location genLocation;
@@ -103,5 +106,17 @@ public class PlayerData {
                 ", matInCollection=" + matInCollection +
                 ", inventoryItems=" + inventoryItems +
                 '}';
+    }
+
+    public @Nullable CommandExecutor reset() {
+        crypto = 0;
+        delayLevel = 1;
+        slotLevel = 1;
+        islandExpansionLevel = 1;
+        genIsActive = false;
+        genLocation = null;
+        matInCollection = new HashSet<>();
+        inventoryItems = new ArrayList<>();
+        return null;
     }
 }

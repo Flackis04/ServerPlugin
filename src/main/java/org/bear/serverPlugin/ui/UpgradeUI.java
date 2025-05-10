@@ -72,7 +72,7 @@ public class UpgradeUI {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GRAY + "Slots");
+            meta.setDisplayName(ChatColor.GRAY + "Storage");
 
             String costText = currentLevel == state.maxSlotLevel
                     ? ChatColor.RED + "Max level reached"

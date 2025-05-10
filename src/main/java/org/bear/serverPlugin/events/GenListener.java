@@ -7,18 +7,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bear.serverPlugin.util.MaterialUtils;
 
 import java.util.*;
 
@@ -34,12 +29,17 @@ public class GenListener implements Listener {
         Block placedBlock = event.getBlock();
         Player player = event.getPlayer();
 
-        // Get the item the player is holding
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        // Check if the meta contains custom model data or a tag (replace 123456 with your custom model data)
-        if (itemInHand.equals(ItemUtils.getGen())) { //isgen, not equals
-            Location loc = placedBlock.getLocation(); // or clicked block, etc.
-            state.placeGenForPlayer(player, loc);
+        if (itemInHand.equals(ItemUtils.getGen())) {
+            if (state.getPlayerData(player.getUniqueId()).gensPlaced < state.getPlayerData(player.getUniqueId()).slotLevel){
+                Location loc = placedBlock.getLocation();
+                state.placeGenForPlayer(player, loc);
+                state.getPlayerData(player.getUniqueId()).gensPlaced += 1;
+                player.sendMessage("§aPlaced gens: " + state.getPlayerData(player.getUniqueId()).gensPlaced + "/" + state.getPlayerData(player.getUniqueId()).slotLevel);
+            }
+            else {
+                Bukkit.broadcastMessage("Someone is duping");
+            }
         }
     }
 
@@ -50,9 +50,8 @@ public class GenListener implements Listener {
 
         ItemStack item = event.getItem().getItemStack();
         Material mat = item.getType();
-        state.seenMaterials.put(mat, true);  // mark it as seen
+        state.seenMaterials.put(mat, true);
 
-// Check if the item has lore and contains "Sell price: "
         boolean hasSellPrice = false;
         ItemMeta meta = item.getItemMeta();
         if (meta != null && meta.hasLore()) {
