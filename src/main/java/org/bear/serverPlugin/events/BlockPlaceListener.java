@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.events;
 
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.util.ItemUtils;
@@ -61,14 +62,14 @@ public class BlockPlaceListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        Block brokenBlock = event.getBlock();
+        Block destroyedBlock = event.getBlock();
         Player player = event.getPlayer();
-        Location loc = brokenBlock.getLocation();
-        if (event.getBlock().equals(ItemUtils.getGen())) {
+        Location loc = destroyedBlock.getLocation();
+
+        if (destroyedBlock.getType().equals(ItemUtils.getGen().getType())) {
             PlayerData playerData = state.getPlayerData(player.getUniqueId());
             Set<Location> genLocations = playerData.getGenLocations();
 
-            // Remove if the broken block's location matches any generator location
             boolean removed = genLocations.removeIf(existingLoc ->
                     existingLoc.getWorld().equals(loc.getWorld()) &&
                             existingLoc.getBlockX() == loc.getBlockX() &&
@@ -79,12 +80,10 @@ public class BlockPlaceListener implements Listener {
             if (removed) {
                 playerData.setGenLocations(genLocations);
                 playerData.gensPlaced -= 1;
-                player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + "gens placed");
+                player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
             }
         }
     }
-
-
 
 
     @EventHandler

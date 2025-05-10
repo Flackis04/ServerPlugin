@@ -2,6 +2,7 @@ package org.bear.serverPlugin.world;
 
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.util.ItemUtils;
 import org.bear.serverPlugin.util.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -117,4 +118,18 @@ public class GenManager {
                 initialDelay
         );
     }
+
+    public void onGenPickup(Player player, Block block) {
+        block.setType(Material.AIR);  // Remove the block from the world
+        player.getInventory().addItem(ItemUtils.getGen());  // Give the gen item back
+
+        PlayerData playerData = state.getPlayerData(player.getUniqueId());
+        playerData.gensPlaced -= 1;
+        //genLocations.add(location);
+        //genLocations.add(location);
+        //genLocations.add(location);
+
+        player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
+    }
+
 }

@@ -35,7 +35,7 @@ public class ServerPlugin extends JavaPlugin {
 
         // Step 4: Register events using the complete state
         Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
-        Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new InteractListener(state, gen), this);
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(state,gen), this);
 

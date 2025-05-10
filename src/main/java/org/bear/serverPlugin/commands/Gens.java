@@ -27,10 +27,8 @@ public class Gens implements CommandExecutor {
         ItemStack genItem = ItemUtils.getGen().clone();
         genItem.setAmount(state.getPlayerData(player.getUniqueId()).gensPlaced);
         for (Location loc : state.getPlayerData(player.getUniqueId()).getGenLocations()) {
-            loc.getBlock().setType(Material.AIR);
+            gen.onGenPickup(player, loc.getBlock());
         }
-        player.getInventory().addItem(genItem);
-        state.getPlayerData(player.getUniqueId()).gensPlaced = 0;
         return true;
     }
 }

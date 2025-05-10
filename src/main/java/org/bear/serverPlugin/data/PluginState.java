@@ -50,7 +50,6 @@ public class PluginState {
 
     // Per-player data map
     public final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
-    public final Set<Location> ironGenLocations = new HashSet<>(); //
 
     public PluginState(
             UpgradeUI upgradeUI,
@@ -72,9 +71,9 @@ public class PluginState {
         this.valuables = materialUtils.generateExponentialWeights(orderedMats, 0.27);
         this.sellPrices = materialUtils.generateSellPrices(valuables, 10000);
         this.seenMaterials = materialUtils.generateInitialSeenMap(orderedMats);
-        this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 120);
-        this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500);
-        this.islandExpansionLevelCosts = generateLevelCosts(maxIslandExpansionLevel, 2500);
+        this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
+        this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
+        this.islandExpansionLevelCosts = generateLevelCosts(maxIslandExpansionLevel, 10000, 5000000, 3.25, true);
     }
 
     public PlayerData getPlayerData(UUID uuid) {
@@ -92,16 +91,17 @@ public class PluginState {
         return Math.max(1, Math.min(15 - (delayLevel * 3), 15));
     }
 
-    private Map<Integer, Integer>
-    generateLevelCosts(int maxLevel, int baseCostPerLevel) {
+    public Map<Integer, Integer> generateLevelCosts(int maxLevel, int minCost, int maxCost, double factor, boolean isGrowth) {
         Map<Integer, Integer> levelCosts = new HashMap<>();
 
         for (int i = 1; i <= maxLevel; i++) {
-            // Example logic: cost increases with delay level
-            int cost = baseCostPerLevel * i; // This is just a simple example; you can adjust the cost calculation
+            double progress = (double)(i - 1) / (maxLevel - 1);
+            double scaledProgress = isGrowth ? Math.pow(progress, factor) : 1 - Math.pow(1 - progress, factor);
+            int cost = (int)(minCost + (maxCost - minCost) * scaledProgress);
             levelCosts.put(i, cost);
         }
 
         return levelCosts;
     }
+
 }

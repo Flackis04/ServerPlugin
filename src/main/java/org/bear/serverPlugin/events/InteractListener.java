@@ -3,6 +3,7 @@ package org.bear.serverPlugin.events;
 import net.kyori.adventure.text.ComponentLike;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.util.ItemUtils;
+import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -20,9 +21,11 @@ import java.util.Set;
 public class InteractListener implements Listener {
 
     private final PluginState state;
+    private final GenManager gen;
 
-    public InteractListener(PluginState state) {
+    public InteractListener(PluginState state, GenManager gen) {
         this.state = state;
+        this.gen = gen;
     }
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
@@ -55,16 +58,10 @@ public class InteractListener implements Listener {
             }
 
             if (!isGenLocation) return;
-
             if (player.isSneaking()) return;
 
-            player.sendMessage("hiddd");
-            Material type = itemInHand.getType();
-            if (!type.isItem() || !type.isBlock()) {
-                clickedBlock.setType(Material.AIR);
-                player.getInventory().addItem(ItemUtils.getGen());
-                state.getPlayerData(player.getUniqueId()).gensPlaced -= 1;
-            }
+            gen.onGenPickup(player, clickedBlock);
         }
     }
 }
+
