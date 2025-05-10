@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.events;
 
+import net.kyori.adventure.text.ComponentLike;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.util.ItemUtils;
 import org.bukkit.Location;
@@ -14,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.MainHand;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class InteractListener implements Listener {
 
@@ -41,12 +43,24 @@ public class InteractListener implements Listener {
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock == null) return;
 
-            Location playerGenLoc = state.getPlayerData(player.getUniqueId()).getGenLocation();
-            if (playerGenLoc == null) return;
+            Set<Location> playerGenLocs = state.getPlayerData(player.getUniqueId()).getGenLocations();
+            if (playerGenLocs.isEmpty()) return;
 
-            if (ItemUtils.isGen(clickedBlock) && clickedBlock.getLocation().equals(playerGenLoc)) {
-                if (player.isSneaking()) return;
-                if (itemInHand.getType().isBlock()) return;
+            boolean isGenLocation = false;
+            for (Location playerGenLoc : playerGenLocs) {
+                if (ItemUtils.isGen(clickedBlock) && clickedBlock.getLocation().equals(playerGenLoc)) {
+                    isGenLocation = true;
+                    break; // Stop once we find the matching location
+                }
+            }
+
+            if (!isGenLocation) return;
+
+            if (player.isSneaking()) return;
+
+            player.sendMessage("hiddd");
+            Material type = itemInHand.getType();
+            if (!type.isItem() || !type.isBlock()) {
                 clickedBlock.setType(Material.AIR);
                 player.getInventory().addItem(ItemUtils.getGen());
                 state.getPlayerData(player.getUniqueId()).gensPlaced -= 1;

@@ -6,6 +6,9 @@ commands:
   is:
     description: Teleport to your own island
     usage: /is
+  getgens:
+    description: resets player variables
+    usage: /getgens
   reset:
     description: resets player variables
     usage: /reset

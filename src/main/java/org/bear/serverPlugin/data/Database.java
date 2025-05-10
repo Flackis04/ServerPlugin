@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.data;
 
+import org.bear.serverPlugin.util.GenUtils;
 import org.bear.serverPlugin.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -49,22 +50,21 @@ public class Database {
                     "slotLevel INTEGER," +
                     "islandExpansionLevel INTEGER," +
                     "genIsActive INTEGER," +
-                    "genLocation_x REAL," +
-                    "genLocation_y REAL," +
-                    "genLocation_z REAL," +
-                    "genLocation_world TEXT," +
+                    "genLocations TEXT," +
                     "matInCollection TEXT," +
-                    "inventory_items TEXT);";  // Added column for inventory items
+                    "inventory_items TEXT);";
+            // Added column for inventory items
             statement.executeUpdate(sql);
             System.out.println("Table created or already exists.");
         } catch (SQLException e) {
             System.err.println("Table creation failed: " + e.getMessage());
         }
     }
-    public void insertPlayerData(int playerId){
+
+    public void insertPlayerData(int playerId) {
         String sql = "INSERT OR IGNORE INTO player_data (id, crypto, delayLevel, slotLevel, islandExpansionLevel, genIsActive, " +
-                "genLocation_x, genLocation_y, genLocation_z, genLocation_world, matInCollection, inventory_items) " +
-                "VALUES (?, 0, 1, 1, 1, 0, null, null, null, null, null, null)";
+                "genLocations, matInCollection, inventory_items) " +
+                "VALUES (?, 0, 1, 1, 1, 0, null, null, null)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             // Set the values for insertion
             stmt.setInt(1, playerId);  // 'id' as playerId
@@ -80,34 +80,26 @@ public class Database {
         // SQL query to insert or update player data
         String sql = "UPDATE player_data SET " +
                 "crypto = ?, delayLevel = ?, slotLevel = ?, islandExpansionLevel = ?, genIsActive = ?, " +
-                "genLocation_x = ?, genLocation_y = ?, genLocation_z = ?, genLocation_world = ?, matInCollection = ?, inventory_items = ? " +
+                "genLocations = ?, matInCollection = ?, inventory_items = ? " +
                 "WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            // Set the values for insertion
             stmt.setInt(1, playerData.crypto);
             stmt.setInt(2, playerData.delayLevel);
             stmt.setInt(3, playerData.slotLevel);
             stmt.setInt(4, playerData.islandExpansionLevel);
-            stmt.setInt(5, playerData.genIsActive ? 1 : 0);  // Store as 1 for true, 0 for false
-            Location genlocation = playerData.getGenLocation();
-            stmt.setDouble(6, genlocation != null ? genlocation.getX() : null);
-            stmt.setDouble(7, genlocation != null ? genlocation.getY() : null);
-            stmt.setDouble(8, genlocation != null ? genlocation.getZ() : null);
-            stmt.setString(9, genlocation != null ? genlocation.getWorld().getName() : null);
+            stmt.setInt(5, playerData.genIsActive ? 1 : 0);
+            stmt.setString(6, GenUtils.serializeLocations(playerData.getGenLocations()));
 
-            // Serialize Set<Material> into a comma-separated String
-            String materialsString = String.join(",", playerData.matInCollection.stream()
+            String materialsString = String.join(",", playerData.getMatInCollection().stream()
                     .map(Material::name)
                     .toArray(String[]::new));
-            stmt.setString(10, materialsString);
+            stmt.setString(7, materialsString);
 
-            // Serialize inventory items into a string (using InventoryUtils.serializeInventory())
             String serializedInventory = InventoryUtils.serializeInventory(playerData.getInventoryItems());
-            stmt.setString(11, serializedInventory);
-            stmt.setInt(12, playerId);  // 'id' as playerId
+            stmt.setString(8, serializedInventory);
+            stmt.setInt(9, playerId);
 
-            // Execute the query
             stmt.executeUpdate();
             System.out.println("Player data inserted or updated.");
         } catch (SQLException e) {
@@ -130,11 +122,6 @@ public class Database {
                     int slotLevel = rs.getInt("slotLevel");
                     int islandExpansionLevel = rs.getInt("islandExpansionLevel");
                     boolean genIsActive = rs.getInt("genIsActive") == 1;
-
-                    double genLocationX = rs.getDouble("genLocation_x");
-                    double genLocationY = rs.getDouble("genLocation_y");
-                    double genLocationZ = rs.getDouble("genLocation_z");
-                    String genLocationWorld = rs.getString("genLocation_world");
 
                     // Deserialize materials collection
                     String materialsString = rs.getString("matInCollection");
@@ -164,17 +151,21 @@ public class Database {
                         inventoryItems = InventoryUtils.deserializeInventory(serializedInventory);
                     }
 
-                    // Create a new PlayerData object with the deserialized inventory and other data
+                    // Fetch the serialized genLocations from the database
+                    String genLocationsString = rs.getString("genLocations");
+                    Set<Location> genLocations = GenUtils.deserializeLocations(genLocationsString);
+
                     playerData = new PlayerData(
                             crypto,
                             delayLevel,
                             slotLevel,
                             islandExpansionLevel,
                             genIsActive,
-                            new Location(Bukkit.getWorld(genLocationWorld), genLocationX, genLocationY, genLocationZ),
+                            genLocations,
                             materials,
                             inventoryItems != null ? inventoryItems : new ArrayList<>()  // Ensure we pass an empty list if inventory is null
                     );
+
                 }
             }
         } catch (SQLException e) {

@@ -50,7 +50,7 @@ public class PluginState {
 
     // Per-player data map
     public final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
-    private final Set<Location> ironGenLocations = new HashSet<>(); //
+    public final Set<Location> ironGenLocations = new HashSet<>(); //
 
     public PluginState(
             UpgradeUI upgradeUI,
@@ -103,87 +103,5 @@ public class PluginState {
         }
 
         return levelCosts;
-    }
-
-    public void placeGenForPlayer(Player player, Location location) {
-        UUID uuid = player.getUniqueId();
-        PlayerData data = getPlayerData(uuid);
-
-        data.setGenLocation(location); // Save per-player gen location
-        data.genIsActive = true;
-        startGenLoop(player);
-    }
-
-    private final Map<UUID, BukkitRunnable> genLoopTasks = new HashMap<>();
-
-    private void startGenLoop(Player player) {
-        UUID uuid = player.getUniqueId();
-
-        // Cancel existing task if any
-        if (genLoopTasks.containsKey(uuid)) {
-            genLoopTasks.get(uuid).cancel();
-        }
-
-        long initialDelay = getDelayTicks(player); // per-player delay
-
-        BukkitRunnable genTask = new BukkitRunnable() {
-            private long lastDelay = initialDelay;
-
-            @Override
-            public void run() {
-                long currentDelay = getDelayTicks(player);
-                if (currentDelay != lastDelay) {
-                    this.cancel();
-                    Bukkit.getScheduler().runTaskLater(
-                            Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
-                            () -> startGenLoop(player),
-                            1L
-                    );
-                    return;
-                }
-
-                if (!getPlayerData(uuid).genIsActive) return;
-
-                Location loc = getPlayerData(uuid).getGenLocation();
-                if (loc == null) return;
-
-                Block baseBlock = loc.getBlock();
-                if (baseBlock.getType() != Material.IRON_BLOCK) return;
-
-                Block blockAbove = baseBlock.getRelative(BlockFace.UP);
-                if (blockAbove.getType() == Material.AIR) {
-                    MaterialUtils genDropMats = new MaterialUtils();
-                    Material dropMaterial = genDropMats.getRandomMaterialFromMap(valuables); // safer fallback
-
-                    ItemStack item = new ItemStack(dropMaterial);
-                    var meta = item.getItemMeta();
-                    if (meta != null) {
-                        List<String> lore = new ArrayList<>();
-                        String description = "Sell price: " + sellPrices.getOrDefault(dropMaterial, 0);
-                        lore.add(description);
-                        meta.setLore(lore);
-                        item.setItemMeta(meta);
-                    }
-
-                    var dropped = blockAbove.getWorld().dropItem(
-                            blockAbove.getLocation().add(0.5, 0, 0.5),
-                            item
-                    );
-                    dropped.setVelocity(new Vector(0, 0.45, 0));
-                }
-            }
-        };
-
-        genLoopTasks.put(uuid, genTask);
-
-        genTask.runTaskTimer(
-                Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
-                0L,
-                initialDelay
-        );
-    }
-
-    public Set<Location> getIronGenLocations() {
-        return ironGenLocations;
     }
 }

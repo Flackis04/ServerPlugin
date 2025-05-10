@@ -27,6 +27,7 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        state.getPlayerData(player.getUniqueId()).genIsActive = true;
 
         // Create a scoreboard for the player
         state.scoreboardManager.createSidebar(player, state.getPlayerData(player.getUniqueId()).crypto);
@@ -38,7 +39,6 @@ public class JoinListener implements Listener {
         if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).gensPlaced == 0) {
             player.getInventory().addItem(ItemUtils.getGen());
         }
-
         int playerId = player.getUniqueId().hashCode();
 
 

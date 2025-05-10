@@ -1,12 +1,13 @@
 package org.bear.serverPlugin;
 
 import org.bear.serverPlugin.data.Database;
-import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.events.*;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.world.ChunkIsland;
 
+import org.bear.serverPlugin.world.GenManager;
+import org.bear.serverPlugin.commands.Gens;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,6 +25,7 @@ public class ServerPlugin extends JavaPlugin {
 
         // Step 1: Create an empty PluginState with null UIs (just for now)
         PluginState state = new PluginState(null, null, null, null, scoreboardManager, database);
+        GenManager gen = new GenManager(state);
 
         // Step 3: Set those UIs back into the PluginStat
         state.upgradeUI = new UpgradeUI(state);
@@ -35,12 +37,11 @@ public class ServerPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state), this);
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
-        Bukkit.getPluginManager().registerEvents(new GenListener(state), this);
-
-        PlayerData player = new PlayerData();
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(state,gen), this);
 
         getCommand("is").setExecutor(new ChunkIsland());
-        getCommand("reset").setExecutor(player.reset());
+        getCommand("getgens").setExecutor(new Gens(state, gen));
+        //getCommand("reset").setExecutor(player.reset());
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }

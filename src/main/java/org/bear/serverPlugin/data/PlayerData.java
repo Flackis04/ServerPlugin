@@ -2,14 +2,9 @@ package org.bear.serverPlugin.data;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PlayerData {
     public int crypto = 0;
@@ -20,61 +15,73 @@ public class PlayerData {
     public int gensPlaced = 0;
 
     // Store materials in collection
-    public Set<Material> matInCollection = new HashSet<>();
+    private final Set<Material> matInCollection = new HashSet<>();
 
-    // Store generator location per player
-    private Location genLocation;
+    // Store generator locations per player
+    private Set<Location> genLocations = new HashSet<>();
 
-    // Store player's inventory items (new field)
+    // Store player's inventory items
     private List<ItemStack> inventoryItems = new ArrayList<>();
 
     // Default constructor
-    public PlayerData() {
-        this.genLocation = null; // Explicitly set to null to avoid unintentional uninitialized state
-    }
+    public PlayerData() {}
 
-    // Constructor for initializing PlayerData with parameters
-    public PlayerData(int crypto, int delayLevel, int slotLevel, int islandExpansionLevel, boolean genIsActive, Location genLocation, Set<Material> matInCollection, List<ItemStack> inventoryItems) {
+    // Constructor with parameters
+    public PlayerData(int crypto, int delayLevel, int slotLevel, int islandExpansionLevel,
+                      boolean genIsActive, Set<Location> genLocations,
+                      Set<Material> matInCollection, List<ItemStack> inventoryItems) {
         this.crypto = crypto;
         this.delayLevel = delayLevel;
         this.slotLevel = slotLevel;
         this.islandExpansionLevel = islandExpansionLevel;
         this.genIsActive = genIsActive;
-        this.genLocation = genLocation;
+        this.genLocations.addAll(genLocations);
         this.matInCollection.addAll(matInCollection);
-        this.inventoryItems = inventoryItems;  // Set inventory items
+        this.inventoryItems = new ArrayList<>(inventoryItems);
     }
 
-    // Setter and getter for genLocation
-    public void setGenLocation(Location location) {
-        this.genLocation = location;
+    // Add a gen location
+    public void addGenLocation(Location location) {
+        this.genLocations.add(location);
     }
 
-    public Location getGenLocation() {
-        return genLocation;
+    // Remove a gen location
+    public void removeGenLocation(Location location) {
+        this.genLocations.remove(location);
     }
 
-    // Method to add materials to the collection
+    // Set gen locations
+    public void setGenLocations(Set<Location> genLocations) {
+        if (genLocations != null) {
+            this.genLocations = genLocations;
+        } else {
+            this.genLocations = new HashSet<>();
+        }
+    }
+
+    // Get all gen locations
+    public Set<Location> getGenLocations() {
+        return genLocations;
+    }
+
+    // Material collection methods
     public void addMaterialToCollection(Material material) {
         matInCollection.add(material);
     }
 
-    // Method to remove materials from the collection
     public void removeMaterialFromCollection(Material material) {
         matInCollection.remove(material);
     }
 
-    // Method to check if a material is in the collection
     public boolean hasMaterial(Material material) {
         return matInCollection.contains(material);
     }
 
-    // Get the current materials in the collection
     public Set<Material> getMatInCollection() {
         return matInCollection;
     }
 
-    // Getter and setter for inventory items
+    // Inventory methods
     public List<ItemStack> getInventoryItems() {
         return inventoryItems;
     }
@@ -83,17 +90,26 @@ public class PlayerData {
         this.inventoryItems = inventoryItems;
     }
 
-    // Method to add an item to the player's inventory
     public void addItemToInventory(ItemStack item) {
         this.inventoryItems.add(item);
     }
 
-    // Method to remove an item from the player's inventory
     public void removeItemFromInventory(ItemStack item) {
         this.inventoryItems.remove(item);
     }
 
-    // Override toString for easy debugging
+    // Reset all fields
+    public void reset() {
+        crypto = 0;
+        delayLevel = 1;
+        slotLevel = 1;
+        islandExpansionLevel = 1;
+        genIsActive = false;
+        genLocations.clear();
+        matInCollection.clear();
+        inventoryItems.clear();
+    }
+
     @Override
     public String toString() {
         return "PlayerData{" +
@@ -102,21 +118,9 @@ public class PlayerData {
                 ", slotLevel=" + slotLevel +
                 ", islandExpansionLevel=" + islandExpansionLevel +
                 ", genIsActive=" + genIsActive +
-                ", genLocation=" + genLocation +
+                ", genLocations=" + genLocations +
                 ", matInCollection=" + matInCollection +
                 ", inventoryItems=" + inventoryItems +
                 '}';
-    }
-
-    public @Nullable CommandExecutor reset() {
-        crypto = 0;
-        delayLevel = 1;
-        slotLevel = 1;
-        islandExpansionLevel = 1;
-        genIsActive = false;
-        genLocation = null;
-        matInCollection = new HashSet<>();
-        inventoryItems = new ArrayList<>();
-        return null;
     }
 }
