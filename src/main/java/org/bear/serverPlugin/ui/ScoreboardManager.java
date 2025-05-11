@@ -18,7 +18,7 @@ public class ScoreboardManager {
 
     public void createSidebar(Player player, int crypto) {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective objective = scoreboard.registerNewObjective("info", "dummy", "§6Your Stats");
+        Objective objective = scoreboard.registerNewObjective("info", "dummy", "§9Your Stats");
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         // Use constant label for consistency

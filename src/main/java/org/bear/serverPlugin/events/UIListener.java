@@ -112,6 +112,13 @@ public class UIListener implements Listener {
                     }
                 }
             }
+
+            if (clickedItem.getType() == Material.IRON_BLOCK &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Generator Upgrades")) {
+                state.genUI.openGenUI(player);
+            }
         }
     }
 

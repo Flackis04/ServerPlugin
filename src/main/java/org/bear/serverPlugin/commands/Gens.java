@@ -3,10 +3,9 @@ package org.bear.serverPlugin.commands;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bear.serverPlugin.util.ItemUtils;
+import org.bear.serverPlugin.utils.ItemUtils;
 import org.bukkit.inventory.ItemStack;
 
 public class Gens implements CommandExecutor {
@@ -24,10 +23,8 @@ public class Gens implements CommandExecutor {
             sender.sendMessage("Only players can use this command.");
             return true;
         }
-        ItemStack genItem = ItemUtils.getGen().clone();
-        genItem.setAmount(state.getPlayerData(player.getUniqueId()).gensPlaced);
         for (Location loc : state.getPlayerData(player.getUniqueId()).getGenLocations()) {
-            gen.onGenPickup(player, loc.getBlock());
+            gen.onGenEvent(player, loc.getBlock(), true);
         }
         return true;
     }

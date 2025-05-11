@@ -1,15 +1,13 @@
 package org.bear.serverPlugin.events;
 
-import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.util.ItemUtils;
+import org.bear.serverPlugin.utils.ItemUtils;
 import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -21,11 +19,11 @@ import org.bukkit.event.Listener;
 
 import java.util.*;
 
-public class BlockPlaceListener implements Listener {
+public class BlockEventListener implements Listener {
     private final PluginState state;
     private final GenManager gen;
 
-    public BlockPlaceListener(PluginState state, GenManager gen) {
+    public BlockEventListener(PluginState state, GenManager gen) {
         this.state = state;
         this.gen = gen;
     }
@@ -64,25 +62,7 @@ public class BlockPlaceListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block destroyedBlock = event.getBlock();
         Player player = event.getPlayer();
-        Location loc = destroyedBlock.getLocation();
-
-        if (destroyedBlock.getType().equals(ItemUtils.getGen().getType())) {
-            PlayerData playerData = state.getPlayerData(player.getUniqueId());
-            Set<Location> genLocations = playerData.getGenLocations();
-
-            boolean removed = genLocations.removeIf(existingLoc ->
-                    existingLoc.getWorld().equals(loc.getWorld()) &&
-                            existingLoc.getBlockX() == loc.getBlockX() &&
-                            existingLoc.getBlockY() == loc.getBlockY() &&
-                            existingLoc.getBlockZ() == loc.getBlockZ()
-            );
-
-            if (removed) {
-                playerData.setGenLocations(genLocations);
-                playerData.gensPlaced -= 1;
-                player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
-            }
-        }
+        gen.onGenEvent(player, destroyedBlock, false);
     }
 
 
@@ -114,6 +94,5 @@ public class BlockPlaceListener implements Listener {
                 //state.collectionUI.updateCollectionUI(player);
             }
         }
-
     }
 }

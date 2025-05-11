@@ -1,8 +1,7 @@
 package org.bear.serverPlugin.data;
 
-import org.bear.serverPlugin.util.GenUtils;
-import org.bear.serverPlugin.util.InventoryUtils;
-import org.bukkit.Bukkit;
+import org.bear.serverPlugin.utils.GenUtils;
+import org.bear.serverPlugin.utils.InventoryUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

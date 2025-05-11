@@ -1,22 +1,12 @@
 package org.bear.serverPlugin.data;
 
 import org.bear.serverPlugin.ui.*;
-import org.bear.serverPlugin.util.MaterialUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bear.serverPlugin.utils.MaterialUtils;
 import org.bukkit.Material;
 
 import java.util.*;
 
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
-
-import java.util.*;
 
 public class PluginState {
 
@@ -25,6 +15,7 @@ public class PluginState {
     public SellUI sellUI;
     public CollectionUI collectionUI;
     public PhoneUI phoneUI;
+    public GenUI genUI;
     public final ScoreboardManager scoreboardManager;
     public Database database;
 
@@ -56,6 +47,7 @@ public class PluginState {
             SellUI sellUI,
             CollectionUI collectionUI,
             PhoneUI phoneUI,
+            GenUI genUI,
             ScoreboardManager scoreboardManager,
             Database database
     ) {
@@ -63,6 +55,7 @@ public class PluginState {
         this.sellUI = sellUI;
         this.collectionUI = collectionUI;
         this.phoneUI = phoneUI;
+        this.genUI = genUI;
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 

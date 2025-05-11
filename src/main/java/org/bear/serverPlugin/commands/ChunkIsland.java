@@ -1,4 +1,4 @@
-package org.bear.serverPlugin.world;
+package org.bear.serverPlugin.commands;
 
 import org.bukkit.*;
 import org.bukkit.command.*;

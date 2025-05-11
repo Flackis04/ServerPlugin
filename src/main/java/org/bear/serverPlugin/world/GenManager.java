@@ -2,15 +2,19 @@ package org.bear.serverPlugin.world;
 
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.util.ItemUtils;
-import org.bear.serverPlugin.util.MaterialUtils;
+import org.bear.serverPlugin.utils.ItemUtils;
+import org.bear.serverPlugin.utils.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -119,17 +123,31 @@ public class GenManager {
         );
     }
 
-    public void onGenPickup(Player player, Block block) {
-        block.setType(Material.AIR);  // Remove the block from the world
-        player.getInventory().addItem(ItemUtils.getGen());  // Give the gen item back
+    public void onGenEvent(Player player, Block block, Boolean isPickup) {
 
-        PlayerData playerData = state.getPlayerData(player.getUniqueId());
-        playerData.gensPlaced -= 1;
-        //genLocations.add(location);
-        //genLocations.add(location);
-        //genLocations.add(location);
+        if (state.getPlayerData(player.getUniqueId()).getGenLocations().contains(block.getLocation())) {
+            if (isPickup){
+                block.setType(Material.AIR);  // Remove the block from the world
+                player.getInventory().addItem(ItemUtils.getGen());  // Give the gen item back
+            }
 
-        player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
+            Location loc = block.getLocation();
+            PlayerData playerData = state.getPlayerData(player.getUniqueId());
+            Set<Location> genLocations = playerData.getGenLocations();
+
+            boolean removed = genLocations.removeIf(existingLoc ->
+                    existingLoc.getWorld().equals(loc.getWorld()) &&
+                            existingLoc.getBlockX() == loc.getBlockX() &&
+                            existingLoc.getBlockY() == loc.getBlockY() &&
+                            existingLoc.getBlockZ() == loc.getBlockZ()
+            );
+
+            if (removed) {
+                playerData.setGenLocations(genLocations);
+                playerData.gensPlaced -= 1;
+                player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
+            }
+        }
     }
 
 }
