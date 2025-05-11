@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.data;
 
+import org.bear.serverPlugin.ScoreboardManager;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.utils.MaterialUtils;
 import org.bukkit.Material;
@@ -12,10 +13,12 @@ public class PluginState {
 
     // Shared UI and manager references
     public UpgradeUI upgradeUI;
+    public MarketUI marketUI;
     public SellUI sellUI;
     public CollectionUI collectionUI;
     public PhoneUI phoneUI;
     public GenUI genUI;
+    public GenMenuUI genMenuUI;
     public final ScoreboardManager scoreboardManager;
     public Database database;
 
@@ -44,18 +47,22 @@ public class PluginState {
 
     public PluginState(
             UpgradeUI upgradeUI,
+            MarketUI marketUI,
             SellUI sellUI,
             CollectionUI collectionUI,
             PhoneUI phoneUI,
             GenUI genUI,
+            GenMenuUI genMenuUI,
             ScoreboardManager scoreboardManager,
             Database database
     ) {
         this.upgradeUI = upgradeUI;
+        this.marketUI = marketUI;
         this.sellUI = sellUI;
         this.collectionUI = collectionUI;
         this.phoneUI = phoneUI;
         this.genUI = genUI;
+        this.genMenuUI = genMenuUI;
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 

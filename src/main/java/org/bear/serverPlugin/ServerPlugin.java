@@ -3,11 +3,12 @@ package org.bear.serverPlugin;
 import org.bear.serverPlugin.data.Database;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.events.*;
+import org.bear.serverPlugin.events.Inventory.*;
+import org.bear.serverPlugin.events.Inventory.QuantityUIListener;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.commands.ChunkIsland;
-
-import org.bear.serverPlugin.world.GenManager;
 import org.bear.serverPlugin.commands.Gens;
+import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,29 +25,35 @@ public class ServerPlugin extends JavaPlugin {
         database.createTable();  // Create the table if it doesn't exist
 
         // Step 1: Create an empty PluginState with null UIs (just for now)
-        PluginState state = new PluginState(null, null, null, null, null, scoreboardManager, database);
+        PluginState state = new PluginState(null, null, null, null, null, null, null, scoreboardManager, database);
         GenManager gen = new GenManager(state);
 
-        // Step 3: Set those UIs back into the PluginStat
+        // Step 3: Set those UIs back into the PluginState
         state.upgradeUI = new UpgradeUI(state);
-        state.sellUI = new SellUI();
+        state.marketUI = new MarketUI();
         state.collectionUI = new CollectionUI(state);
         state.phoneUI = new PhoneUI(state);
         state.genUI = new GenUI(state);
-
+        state.genMenuUI = new GenMenuUI(state);
+        state.sellUI = new SellUI();
 
         // Step 4: Register events using the complete state
         Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state, gen), this);
-        Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
-        Bukkit.getPluginManager().registerEvents(new BlockEventListener(state,gen), this);
+        Bukkit.getPluginManager().registerEvents(new BlockEventListener(state, gen), this);
 
+        Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new QuantityUIListener(state), this); // ✅ Add this line
+        Bukkit.getPluginManager().registerEvents(new SellListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new UpgradeListener(state), this);
+
+        // Register commands
         getCommand("is").setExecutor(new ChunkIsland());
         getCommand("getgens").setExecutor(new Gens(state, gen));
-        //getCommand("reset").setExecutor(player.reset());
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }
+
     @Override
     public void onDisable() {
         // Ensure to disconnect when the plugin is disabled

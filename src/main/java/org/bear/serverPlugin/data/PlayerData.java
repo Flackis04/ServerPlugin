@@ -14,6 +14,8 @@ public class PlayerData {
     public boolean genIsActive = false;
     public int gensPlaced = 0;
 
+    public Map<Integer, Integer> genLevels = new HashMap<>();
+
     // Store materials in collection
     private final Set<Material> matInCollection = new HashSet<>();
 

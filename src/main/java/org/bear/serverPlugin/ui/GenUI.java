@@ -25,8 +25,8 @@ public class GenUI {
 
     public void openGenUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Generator"));
-        inv.setItem(22, createCpuItem(player));
-        inv.setItem(24, createSlotItem(player));
+        inv.setItem(10, createCpuItem(player));
+        inv.setItem(12, createSlotItem(player));
 
         player.openInventory(inv);
     }
@@ -49,7 +49,7 @@ public class GenUI {
                     : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Makes your gens faster",
+                    ChatColor.DARK_GRAY + "Makes your Gens faster",
                     ChatColor.GRAY + "Level: " + currentLevel + " (" + (state.getDelayTicks(player) / 20f) + "s)",
                     costText
             ));
@@ -79,7 +79,7 @@ public class GenUI {
                     : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Place an additional Gen per level",
+                    ChatColor.DARK_GRAY + "Enables you to place an additional Gen per level",
                     ChatColor.GRAY + "Level: " + currentLevel,
                     costText
             ));

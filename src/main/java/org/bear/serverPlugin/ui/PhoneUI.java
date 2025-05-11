@@ -27,6 +27,7 @@ public class PhoneUI {
         inv.setItem(12, createSellBtn());
         inv.setItem(14, createCollectionBtn());
         inv.setItem(16, createActivationBtn(player));
+        inv.setItem(28, createMarketBtn());
 
         player.openInventory(inv);
     }
@@ -88,6 +89,21 @@ public class PhoneUI {
             meta.setLore(List.of(
                     ChatColor.DARK_GRAY + "state: " + state.getPlayerData(player.getUniqueId()).genIsActive
             ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createMarketBtn() {
+        ItemStack item = new ItemStack(Material.DIAMOND_BLOCK);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "Market");
+            meta.setLore(List.of(
+                    ChatColor.DARK_GRAY + "Buy stuff here"));
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }

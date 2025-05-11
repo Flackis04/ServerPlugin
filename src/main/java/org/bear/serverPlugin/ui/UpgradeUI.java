@@ -25,8 +25,8 @@ public class UpgradeUI {
 
     public void openUpgradeUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54, Component.text("Upgrades"));
-        inv.setItem(41, createIslandUpgradeBtn(player));  // Using Island Expansion with its own level
-        inv.setItem(43, createGenUpgradeMenuBtn());  // Using Island Expansion with its own level
+        inv.setItem(10, createIslandUpgradeBtn(player));  // Using Island Expansion with its own level
+        inv.setItem(12, createGenUpgradeMenuBtn());  // Using Island Expansion with its own level
         player.openInventory(inv);
     }
 

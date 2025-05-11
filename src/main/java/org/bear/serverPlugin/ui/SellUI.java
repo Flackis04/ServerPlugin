@@ -12,7 +12,7 @@ public class SellUI {
     public final Map<Player, Inventory> openSellUIs = new HashMap<>();
 
     public void openSellUI(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 36, Component.text("Sell"));
+        Inventory inv = Bukkit.createInventory(null, 36, Component.text("SELL"));
         openSellUIs.put(player, inv); // Track it
         player.openInventory(inv);
     }
