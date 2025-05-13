@@ -8,10 +8,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.Material;
 import org.bukkit.ChatColor;
 
-public class UpgradeListener implements Listener {
+public class UpgradeUIListener implements Listener {
     private final PluginState state;
 
-    public UpgradeListener(PluginState state) {
+    public UpgradeUIListener(PluginState state) {
         this.state = state;
     }
 

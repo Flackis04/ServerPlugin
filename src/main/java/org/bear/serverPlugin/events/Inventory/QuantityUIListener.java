@@ -1,8 +1,10 @@
 package org.bear.serverPlugin.events.Inventory;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,149 +26,108 @@ public class QuantityUIListener implements Listener {
 
     private final PluginState state;
 
-    // Constructor with PluginState passed
     public QuantityUIListener(PluginState state) {
         this.state = state;
     }
 
-    // Set the selection for the player
     public void setSelection(Player player, Material material, int costPerItem) {
-        selectedQuantities.put(player.getUniqueId(), 1); // Default to 1
+        selectedQuantities.put(player.getUniqueId(), 1);
         selectedMaterials.put(player.getUniqueId(), material);
         itemCosts.put(player.getUniqueId(), costPerItem);
     }
 
     @EventHandler
     public void onQuantityClick(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        String title = event.getView().getTitle();
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!(event.getView().title() instanceof TextComponent title) || !title.content().equals("Select Quantity")) return;
 
-        // Check if the inventory title matches the quantity selection menu
-        if (!title.equals("Select Quantity")) return;
-
-        event.setCancelled(true); // Prevent item from being taken
-
+        event.setCancelled(true);
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || !clicked.hasItemMeta()) return;
 
         UUID uuid = player.getUniqueId();
         int quantity = selectedQuantities.getOrDefault(uuid, 1);
+        String name = clicked.getItemMeta().displayName() instanceof TextComponent tc ? tc.content() : "";
 
-        String name = clicked.getItemMeta().getDisplayName();
-        if (name.contains("+1")) quantity += 1;
-        else if (name.contains("+16")) quantity += 16;
-        else if (name.contains("+64")) quantity += 64;
-        else if (name.contains("-1")) quantity = Math.max(1, quantity - 1);
-        else if (name.contains("-16")) quantity = Math.max(1, quantity - 16);
-        else if (name.contains("-64")) quantity = Math.max(1, quantity - 64);
-        else if (name.contains("Confirm")) {
-            Material material = selectedMaterials.get(uuid);
-            int cost = itemCosts.get(uuid) * quantity;
-
-            // Placeholder for balance check
-            if (canAfford(player, cost)) {
-                // Subtract cost from the player's balance
-                subtractBalance(player, cost);
-
-                ItemStack result = new ItemStack(material, quantity);
-                player.getInventory().addItem(result);
-                player.sendMessage("§aPurchased " + quantity + " " + material.name() + " for " + cost + " crypto.");
-                player.closeInventory();
-            } else {
-                player.sendMessage("§cYou do not have enough crypto.");
+        quantity = switch (name) {
+            case "+1" -> Math.min(64, quantity + 1);
+            case "+9" -> Math.min(64, quantity + 10);
+            case "+64" -> 64;
+            case "-1" -> Math.max(1, quantity - 1);
+            case "-10" -> Math.max(1, quantity - 10);
+            case "-64" -> Math.max(1, quantity - 64);
+            case "Confirm" -> {
+                handleConfirm(player, uuid, quantity);
+                yield quantity;
             }
-            return;
-        } else if (name.contains("Cancel")) {
-            player.closeInventory();
-            return;
-        }
+            case "Cancel" -> {
+                player.closeInventory();
+                yield quantity;
+            }
+            default -> quantity;
+        };
 
-        // Update the selected quantity
         selectedQuantities.put(uuid, quantity);
-        player.sendMessage("§eSelected Quantity: §f" + quantity);
-
-        // Optionally, update the inventory UI with the new quantity
-        // You can implement this depending on how you want the quantity to be updated in the UI.
+        state.marketUI.openQuantityUI(player, selectedMaterials.get(uuid), itemCosts.get(uuid), quantity);
+        player.sendMessage(Component.text("Selected Quantity: " + quantity).color(NamedTextColor.YELLOW));
     }
 
-    // Placeholder method to check if the player can afford the item
-    private boolean canAfford(Player player, int cost) {
-        // Replace this with actual balance check logic (e.g., from a database or player data)
-        return true; // Always returns true for now
-    }
+    private void handleConfirm(Player player, UUID uuid, int quantity) {
+        Material material = selectedMaterials.get(uuid);
+        int cost = itemCosts.get(uuid) * quantity;
 
-    // Placeholder method to subtract the cost from the player's balance
-    private void subtractBalance(Player player, int cost) {
-        // Replace this with actual logic for subtracting from the player's balance
-        // For example, using player data or an economy plugin
+        if (canAfford(player, cost)) {
+            subtractBalance(player, cost);
+            state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+            player.getInventory().addItem(new ItemStack(material, quantity));
+            player.sendMessage(Component.text("Purchased " + quantity + " " + material.name() + " for " + cost + " crypto.").color(NamedTextColor.GREEN));
+            player.closeInventory();
+        } else {
+            player.sendMessage(Component.text("You do not have enough crypto.").color(NamedTextColor.RED));
+        }
     }
 
     @EventHandler
     public void onItemClick(InventoryClickEvent event) {
-        // Check if the player clicked in the inventory (not the hotbar, etc.)
-        if (!(event.getWhoClicked() instanceof Player)) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!(event.getView().title() instanceof TextComponent title) || !title.content().equals("Market")) return;
 
-        Player player = (Player) event.getWhoClicked();
-        String title = event.getView().getTitle();
-
-        // You can check for the title of the inventory (if it has one) or check the item clicked
-        if (event.getClickedInventory() == null) return;
-
-        // Assuming you have an inventory with specific items you want to handle
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || !clickedItem.hasItemMeta()) return;
 
-        String itemName = clickedItem.getItemMeta().getDisplayName();
+        String itemName = clickedItem.getItemMeta().displayName() instanceof TextComponent tc ? tc.content() : "";
 
-        // Check if the clicked item is one that should trigger the quantity UI
-        if (itemName.equals(ChatColor.YELLOW + "Dirt")) { // Replace with your item name or condition
-            event.setCancelled(true);  // Cancel the default behavior (such as picking up the item)
+        for (ItemStack item : event.getClickedInventory().getContents()) {
+            if (item == null || !item.hasItemMeta()) continue;
 
-            // Open the quantity UI
-            openQuantityUI(player, clickedItem);
+            String marketItemName = item.getItemMeta().displayName() instanceof TextComponent tcItem ? tcItem.content() : "";
+
+            if (!itemName.equals(marketItemName)) continue;
+            event.setCancelled(true);
+            setSelection(player, clickedItem.getType(), getCostForItem(clickedItem.getType()));
+            player.openInventory(state.marketUI.createQuantityInventory(clickedItem.getType()));
+            break;
         }
     }
 
-    private void openQuantityUI(Player player, ItemStack clickedItem) {
-        // Example of setting the material and cost for the selected item
-        Material material = clickedItem.getType();
-        int costPerItem = 10; // Set the cost of the item here (you can make it dynamic)
-
-        // Set the player's selection (material and cost)
-        QuantityUIListener quantityUIListener = new QuantityUIListener(state); // Make sure state is initialized properly
-        quantityUIListener.setSelection(player, material, costPerItem);
-
-        // Open the UI for selecting quantity (you'll need to create a custom inventory for this)
-        player.openInventory(createQuantityInventory());
+    // Example method to get cost for a material
+    private int getCostForItem(Material material) {
+        switch (material) {
+            case DIRT:
+                return 2;
+            case WOODEN_AXE:
+                return 100;
+            // Add more cases as needed
+            default:
+                return 0;
+        }
     }
 
-    // Method to create the inventory for selecting quantity
-    private Inventory createQuantityInventory() {
-        Inventory inventory = Bukkit.createInventory(null, 9, "Select Quantity");
-
-        // Add items to the inventory to allow the player to select quantities, confirm or cancel
-        ItemStack plusOne = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta plusOneMeta = plusOne.getItemMeta();
-        plusOneMeta.setDisplayName("+1");
-        plusOne.setItemMeta(plusOneMeta);
-        inventory.addItem(plusOne);
-
-        // Add other buttons for -1, +16, etc.
-
-        // Add a confirm and cancel button
-        ItemStack confirmButton = new ItemStack(Material.DIAMOND_BLOCK);
-        ItemMeta confirmMeta = confirmButton.getItemMeta();
-        confirmMeta.setDisplayName("Confirm");
-        confirmButton.setItemMeta(confirmMeta);
-        inventory.addItem(confirmButton);
-
-        ItemStack cancelButton = new ItemStack(Material.REDSTONE_BLOCK);
-        ItemMeta cancelMeta = cancelButton.getItemMeta();
-        cancelMeta.setDisplayName("Cancel");
-        cancelButton.setItemMeta(cancelMeta);
-        inventory.addItem(cancelButton);
-
-        return inventory;
+    private boolean canAfford(Player player, int cost) {
+        return state.getPlayerData(player.getUniqueId()).crypto >= cost;
     }
 
+    private void subtractBalance(Player player, int cost) {
+        state.getPlayerData(player.getUniqueId()).crypto -= cost;
+    }
 }

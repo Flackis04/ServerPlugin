@@ -40,19 +40,41 @@ public class Database {
         }
     }
 
-    public void createTable() {
+    public void createTables() {
         try (Statement statement = connection.createStatement()) {
-            String sql = "CREATE TABLE IF NOT EXISTS player_data (" +
+            String sql = "CREATE TABLE IF NOT EXISTS players (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "crypto INTEGER," +
                     "delayLevel INTEGER," +
                     "slotLevel INTEGER," +
                     "islandExpansionLevel INTEGER," +
-                    "genIsActive INTEGER," +
-                    "genLocations TEXT," +
                     "matInCollection TEXT," +
-                    "inventory_items TEXT);";
-            // Added column for inventory items
+                    "inventory_items TEXT);" +
+
+                    "CREATE TABLE IF NOT EXISTS generators (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "name TEXT," +
+                    "block TEXT);" +
+
+
+                    "CREATE TABLE IF NOT EXISTS locations (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "x INTEGER," +
+                    "y INTEGER," +
+                    "z INTEGER," +
+                    "worldName TEXT);" +
+
+                    "CREATE TABLE IF NOT EXISTS playergenerators (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "location INTEGER," +
+                    "generator INTEGER," +
+                    "player INTEGER," +
+                    "FOREIGN KEY (player) REFERENCES players (id)," +
+                    "FOREIGN KEY (location) REFERENCES locations (id)," +
+                    "FOREIGN KEY (generator) REFERENCES generators (id));";
+
+
+                    // Added column for inventory items
             statement.executeUpdate(sql);
             System.out.println("Table created or already exists.");
         } catch (SQLException e) {
@@ -61,7 +83,7 @@ public class Database {
     }
 
     public void insertPlayerData(int playerId) {
-        String sql = "INSERT OR IGNORE INTO player_data (id, crypto, delayLevel, slotLevel, islandExpansionLevel, genIsActive, " +
+        String sql = "INSERT OR IGNORE INTO players (id, crypto, delayLevel, slotLevel, islandExpansionLevel, genIsActive, " +
                 "genLocations, matInCollection, inventory_items) " +
                 "VALUES (?, 0, 1, 1, 1, 0, null, null, null)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -77,7 +99,7 @@ public class Database {
 
     public void updatePlayerData(int playerId, PlayerData playerData) {
         // SQL query to insert or update player data
-        String sql = "UPDATE player_data SET " +
+        String sql = "UPDATE players SET " +
                 "crypto = ?, delayLevel = ?, slotLevel = ?, islandExpansionLevel = ?, genIsActive = ?, " +
                 "genLocations = ?, matInCollection = ?, inventory_items = ? " +
                 "WHERE id = ?";
@@ -88,7 +110,6 @@ public class Database {
             stmt.setInt(3, playerData.slotLevel);
             stmt.setInt(4, playerData.islandExpansionLevel);
             stmt.setInt(5, playerData.genIsActive ? 1 : 0);
-            stmt.setString(6, GenUtils.serializeLocations(playerData.getGenLocations()));
 
             String materialsString = String.join(",", playerData.getMatInCollection().stream()
                     .map(Material::name)
@@ -107,7 +128,7 @@ public class Database {
     }
 
     public PlayerData loadPlayerData(int playerId) {
-        String sql = "SELECT * FROM player_data WHERE id = ?";
+        String sql = "SELECT * FROM players WHERE id = ?";
         PlayerData playerData = new PlayerData();
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -120,7 +141,7 @@ public class Database {
                     int delayLevel = rs.getInt("delayLevel");
                     int slotLevel = rs.getInt("slotLevel");
                     int islandExpansionLevel = rs.getInt("islandExpansionLevel");
-                    boolean genIsActive = rs.getInt("genIsActive") == 1;
+
 
                     // Deserialize materials collection
                     String materialsString = rs.getString("matInCollection");
@@ -151,16 +172,14 @@ public class Database {
                     }
 
                     // Fetch the serialized genLocations from the database
-                    String genLocationsString = rs.getString("genLocations");
-                    Set<Location> genLocations = GenUtils.deserializeLocations(genLocationsString);
 
                     playerData = new PlayerData(
                             crypto,
                             delayLevel,
                             slotLevel,
                             islandExpansionLevel,
-                            genIsActive,
-                            genLocations,
+                            true,
+                            new HashSet<>(),
                             materials,
                             inventoryItems != null ? inventoryItems : new ArrayList<>()  // Ensure we pass an empty list if inventory is null
                     );

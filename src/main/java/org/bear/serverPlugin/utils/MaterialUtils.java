@@ -7,7 +7,7 @@ import java.util.*;
 public class MaterialUtils {
 
     // Method to generate exponential weights for materials
-    public Map<Material, Double> generateExponentialWeights(List<Material> materials, double ratio) {
+    public static Map<Material, Double> generateExponentialWeights(List<Material> materials, double ratio) {
         int count = materials.size();
         double[] rawWeights = new double[count];
         double sum = 0.0;
@@ -33,7 +33,7 @@ public class MaterialUtils {
     }
 
     // Method to get a random material based on weighted probabilities
-    public Material getRandomMaterialFromMap(Map<Material, Double> weightedMap) {
+    public static Material getRandomMaterialFromMap(Map<Material, Double> weightedMap) {
         double random = Math.random();
         double cumulative = 0.0;
 
@@ -49,7 +49,7 @@ public class MaterialUtils {
     }
 
     // Method to generate initial seen map for materials (e.g., used for tracking if a material has been seen)
-    public Map<Material, Boolean> generateInitialSeenMap(List<Material> materials) {
+    public static Map<Material, Boolean> generateInitialSeenMap(List<Material> materials) {
         Map<Material, Boolean> tracker = new HashMap<>();
         for (Material mat : materials) {
             tracker.put(mat, false);
@@ -58,7 +58,7 @@ public class MaterialUtils {
     }
 
     // Method to generate sell prices based on material weights
-    public Map<Material, Integer> generateSellPrices(Map<Material, Double> weights, int baseValue) {
+    public static Map<Material, Integer> generateSellPrices(Map<Material, Double> weights, int baseValue) {
         Map<Material, Integer> sellPrices = new LinkedHashMap<>();
 
         // Step 1: Calculate prices

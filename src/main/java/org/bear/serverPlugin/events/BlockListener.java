@@ -19,11 +19,11 @@ import org.bukkit.event.Listener;
 
 import java.util.*;
 
-public class BlockEventListener implements Listener {
+public class BlockListener implements Listener {
     private final PluginState state;
     private final GenManager gen;
 
-    public BlockEventListener(PluginState state, GenManager gen) {
+    public BlockListener(PluginState state, GenManager gen) {
         this.state = state;
         this.gen = gen;
     }
@@ -62,7 +62,7 @@ public class BlockEventListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block destroyedBlock = event.getBlock();
         Player player = event.getPlayer();
-        gen.onGenEvent(player, destroyedBlock, false);
+        gen.onGenRemoveEvent(player, destroyedBlock, false);
     }
 
 

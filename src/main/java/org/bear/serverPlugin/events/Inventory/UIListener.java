@@ -60,15 +60,6 @@ public class UIListener implements Listener {
                 state.collectionUI.updateCollectionUI(player);
             }
 
-            if (clickedItem.getType() == Material.REDSTONE &&
-                    clickedItem.hasItemMeta() &&
-                    clickedItem.getItemMeta().hasDisplayName() &&
-                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Activation")) {
-                state.getPlayerData(player.getUniqueId()).genIsActive = !state.getPlayerData(player.getUniqueId()).genIsActive;
-                state.phoneUI.openPhoneUI(player);
-                player.sendMessage("gens activated: " + state.getPlayerData(player.getUniqueId()).genIsActive);
-            }
-
             if (clickedItem.getType() == Material.DIAMOND_BLOCK &&
                     clickedItem.hasItemMeta() &&
                     clickedItem.getItemMeta().hasDisplayName() &&

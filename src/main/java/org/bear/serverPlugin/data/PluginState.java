@@ -3,6 +3,7 @@ package org.bear.serverPlugin.data;
 import org.bear.serverPlugin.ScoreboardManager;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.utils.MaterialUtils;
+import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Material;
 
 import java.util.*;
@@ -19,6 +20,7 @@ public class PluginState {
     public PhoneUI phoneUI;
     public GenUI genUI;
     public GenMenuUI genMenuUI;
+    public GenManager genManager;
     public final ScoreboardManager scoreboardManager;
     public Database database;
 
@@ -53,6 +55,7 @@ public class PluginState {
             PhoneUI phoneUI,
             GenUI genUI,
             GenMenuUI genMenuUI,
+            GenManager genManager,
             ScoreboardManager scoreboardManager,
             Database database
     ) {
@@ -63,6 +66,7 @@ public class PluginState {
         this.phoneUI = phoneUI;
         this.genUI = genUI;
         this.genMenuUI = genMenuUI;
+        this.genManager = genManager;
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 

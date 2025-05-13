@@ -1,30 +1,35 @@
 package org.bear.serverPlugin.events.Inventory;
 
+import net.kyori.adventure.text.TextComponent;
 import org.bear.serverPlugin.data.PluginState;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.entity.Player;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class SellListener implements Listener {
+public class SellUIListener implements Listener {
     private final PluginState state;
 
-    public SellListener(PluginState state) {
+    public SellUIListener(PluginState state) {
         this.state = state;
     }
 
     @EventHandler
-    public void onCloseUI(InventoryCloseEvent event) {
+    public void onCloseUI(@NotNull InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        String title = event.getView().title().toString();
+        String title = ((TextComponent) event.getView().title()).content();
 
-        if (title.equalsIgnoreCase("Sell")) {
+        if ( title.equalsIgnoreCase("SELL")) {
             Inventory closedInventory = event.getInventory();
             Map<Material, Integer> foundItems = getMaterialIntegerMap(event, state.sellPrices);
             int totalProfit = 0;
@@ -41,7 +46,7 @@ public class SellListener implements Listener {
                             ItemMeta meta = item.getItemMeta();
                             if (meta != null && meta.hasLore()) {
                                 for (String line : meta.getLore()) {
-                                    if (line.contains("sell price:")) {
+                                    if (line.contains("Sell price:")) {
                                         int amount = item.getAmount();
                                         int pricePerItem = state.sellPrices.getOrDefault(material, 0);
                                         int value = amount * pricePerItem;
@@ -55,9 +60,9 @@ public class SellListener implements Listener {
                         }
                     }
                 }
-
                 player.sendMessage("§aTotal Profit: §2" + totalProfit + "C");
                 state.getPlayerData(player.getUniqueId()).crypto += totalProfit;
+                state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
             }
 
             // Return non-sellable items to the player
@@ -83,7 +88,7 @@ public class SellListener implements Listener {
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null && meta.hasLore()) {
                     for (String line : meta.getLore()) {
-                        if (line.contains("sell price:")) {
+                        if (line.contains("Sell price:")) {
                             int amount = item.getAmount();
                             foundItems.put(material, foundItems.getOrDefault(material, 0) + amount);
                             break;

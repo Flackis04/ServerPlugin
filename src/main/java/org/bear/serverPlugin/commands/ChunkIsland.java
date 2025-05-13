@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.commands;
 
+import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -12,6 +13,12 @@ public class ChunkIsland implements CommandExecutor {
 
     private final Set<ChunkCoord> usedChunks = new HashSet<>();
     private final Random random = new Random();
+    public PluginState state;
+    public static ChunkCoord newChunk;
+
+    public void chunkIsland(PluginState state){
+        this.state = state;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -21,7 +28,7 @@ public class ChunkIsland implements CommandExecutor {
         }
 
         World world = player.getWorld(); // Can be customized
-        ChunkCoord newChunk = findSafeChunk();
+        newChunk = findSafeChunk();
 
         usedChunks.add(newChunk);
         int x = newChunk.x * 16 + 8;

@@ -1,14 +1,16 @@
 package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.utils.ItemUtils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -16,36 +18,55 @@ import java.util.ArrayList;
 public class MarketUI {
 
     private static final String UI_TITLE = "Market";
-    private static final int INVENTORY_SIZE = 36;
-
+    private static final int INVENTORY_SIZE = 27;
+    private final PluginState state;
+    public MarketUI(PluginState state) {
+        this.state = state;
+    }
     public void openMarketUI(Player player) {
         Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, Component.text(UI_TITLE));
 
-        inv.setItem(0, createMarketItem(Material.DIRT, 100, player, true));
+        inv.addItem(createMarketItem(Material.DIRT, 2, player, true));
+        inv.addItem(createMarketItem(Material.WOODEN_AXE, 100, player, false));
+        inv.addItem(createMarketItemFromStack(ItemUtils.getPhone(), 25000, player, false));
 
         player.openInventory(inv);
     }
 
     private ItemStack createMarketItem(Material material, int cost, Player player, Boolean isStackable) {
-
-        if (isStackable){
-            openQuantityUI(player, material, cost);
-        }
-
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {
             boolean canAfford = checkPlayerCanAfford(player, cost);
 
-            meta.setDisplayName(ChatColor.YELLOW + toTitleCase(material.name()));
+            meta.displayName(Component.text(toTitleCase(material.name())).color(NamedTextColor.YELLOW));
 
-            List<String> lore = new ArrayList<>();
-            lore.add(ChatColor.GRAY + "A useful item");
-            lore.add("");
-            lore.add((canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost + " crypto");
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("A useful item").color(NamedTextColor.GRAY));
+            lore.add(Component.empty());
+            lore.add(Component.text("Cost: " + cost + " crypto").color(canAfford ? NamedTextColor.GREEN : NamedTextColor.RED));
 
-            meta.setLore(lore);
+            meta.lore(lore);
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    private ItemStack createMarketItemFromStack(ItemStack item, int cost, Player player, Boolean isStackable) {
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            boolean canAfford = checkPlayerCanAfford(player, cost);
+
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("A useful item").color(NamedTextColor.GRAY));
+            lore.add(Component.empty());
+            lore.add(Component.text("Cost: " + cost + " crypto").color(canAfford ? NamedTextColor.GREEN : NamedTextColor.RED));
+
+            meta.lore(lore);
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
             item.setItemMeta(meta);
         }
@@ -72,46 +93,60 @@ public class MarketUI {
 
         return titleCase.toString().trim();
     }
-    private void openQuantityUI(Player player, Material material, int costPerItem) {
-        Inventory quantityInv = Bukkit.createInventory(null, 36, Component.text("Select Quantity"));
-
-        ItemStack add1 = createPane(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "+1");
-        ItemStack add16 = createPane(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "+16");
-        ItemStack add64 = createPane(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "+64");
-
-        ItemStack sub1 = createPane(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "-1");
-        ItemStack sub16 = createPane(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "-16");
-        ItemStack sub64 = createPane(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "-64");
-
-        ItemStack confirm = createPane(Material.EMERALD_BLOCK, ChatColor.GOLD + "Confirm Purchase");
-        ItemStack cancel = createPane(Material.BARRIER, ChatColor.GRAY + "Cancel");
-
-        quantityInv.setItem(10, add1);
-        quantityInv.setItem(11, add16);
-        quantityInv.setItem(12, add64);
-
-        quantityInv.setItem(14, sub1);
-        quantityInv.setItem(15, sub16);
-        quantityInv.setItem(16, sub64);
-
-        quantityInv.setItem(22, confirm);
-        quantityInv.setItem(31, cancel);
-
-        // Store custom metadata (e.g., using a map or metadata APIs) to track:
-        // - selected material
-        // - cost
-        // - current quantity (initially 1)
+    public void openQuantityUI(Player player, Material material, int costPerItem, int quantity) {
+        Inventory quantityInv = createQuantityInventory(material);
 
         player.openInventory(quantityInv);
     }
 
-    private ItemStack createPane(Material material, String name) {
+    public void openNoQuantityUI(Player player, Material material, int cost) {
+        Inventory inv = Bukkit.createInventory(null, 27, Component.text("No Quantity"));
+
+        inv.setItem(27, new ItemStack(material));
+
+        ItemStack add1 = createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+1").color(NamedTextColor.GREEN));
+        ItemStack add10 = createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+10").color(NamedTextColor.GREEN));
+        ItemStack add64 = createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+64").color(NamedTextColor.GREEN));
+
+        ItemStack sub1 = createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-1").color(NamedTextColor.RED));
+        ItemStack sub10 = createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-10").color(NamedTextColor.RED));
+        ItemStack sub64 = createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-64").color(NamedTextColor.RED));
+
+        ItemStack confirm = createPane(Material.EMERALD_BLOCK, Component.text("Confirm Purchase").color(NamedTextColor.GOLD));
+        ItemStack cancel = createPane(Material.BARRIER, Component.text("Cancel").color(NamedTextColor.GRAY));
+
+        inv.setItem(11, confirm);
+        inv.setItem(15, cancel);
+
+        inv.setItem(13, new ItemStack(material));
+
+        player.openInventory(inv);
+    }
+
+    public Inventory createQuantityInventory(Material material) {
+        Inventory inventory = Bukkit.createInventory(null, 27, Component.text("Select Quantity"));
+
+        inventory.setItem(15, createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+1").color(NamedTextColor.GREEN)));
+        inventory.setItem(16, createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+10").color(NamedTextColor.GREEN)));
+        inventory.setItem(17, createPane(Material.LIME_STAINED_GLASS_PANE, Component.text("+64").color(NamedTextColor.GREEN)));
+
+        inventory.setItem(9, createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-64").color(NamedTextColor.RED)));
+        inventory.setItem(10, createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-10").color(NamedTextColor.RED)));
+        inventory.setItem(11, createPane(Material.RED_STAINED_GLASS_PANE, Component.text("-1").color(NamedTextColor.RED)));
+
+        inventory.setItem(13, new ItemStack(material));
+        inventory.setItem(21, createPane(Material.BARRIER, Component.text("Cancel").color(NamedTextColor.GRAY)));
+        inventory.setItem(23, createPane(Material.EMERALD_BLOCK, Component.text("Confirm").color(NamedTextColor.GREEN)));
+
+        return inventory;
+    }
+
+    private ItemStack createPane(Material material, Component name) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
+        meta.displayName(name);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         return item;
     }
-
 }

@@ -13,24 +13,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ServerPlugin extends JavaPlugin {
+    private static ServerPlugin plugin;
     private Database database;
-
+    public static ServerPlugin getPlugin(){
+        return plugin;
+    }
     @Override
     public void onEnable() {
+        plugin = this;
         // Initialize the ScoreboardManager
         ScoreboardManager scoreboardManager = new ScoreboardManager();
 
         database = new Database();
         database.connect();  // Connect to the database
-        database.createTable();  // Create the table if it doesn't exist
+        database.createTables();  // Create the table if it doesn't exist
 
         // Step 1: Create an empty PluginState with null UIs (just for now)
-        PluginState state = new PluginState(null, null, null, null, null, null, null, scoreboardManager, database);
+        PluginState state = new PluginState(null, null, null, null, null, null, null, null, scoreboardManager, database);
         GenManager gen = new GenManager(state);
 
         // Step 3: Set those UIs back into the PluginState
         state.upgradeUI = new UpgradeUI(state);
-        state.marketUI = new MarketUI();
+        state.marketUI = new MarketUI(state);
         state.collectionUI = new CollectionUI(state);
         state.phoneUI = new PhoneUI(state);
         state.genUI = new GenUI(state);
@@ -38,14 +42,14 @@ public class ServerPlugin extends JavaPlugin {
         state.sellUI = new SellUI();
 
         // Step 4: Register events using the complete state
-        Bukkit.getPluginManager().registerEvents(new JoinListener(state, database), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state, gen), this);
-        Bukkit.getPluginManager().registerEvents(new BlockEventListener(state, gen), this);
+        Bukkit.getPluginManager().registerEvents(new BlockListener(state, gen), this);
 
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new QuantityUIListener(state), this); // ✅ Add this line
-        Bukkit.getPluginManager().registerEvents(new SellListener(state), this);
-        Bukkit.getPluginManager().registerEvents(new UpgradeListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new SellUIListener(state), this);
+        Bukkit.getPluginManager().registerEvents(new UpgradeUIListener(state), this);
 
         // Register commands
         getCommand("is").setExecutor(new ChunkIsland());

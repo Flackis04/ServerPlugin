@@ -5,8 +5,6 @@ import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Location;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bear.serverPlugin.utils.ItemUtils;
-import org.bukkit.inventory.ItemStack;
 
 public class Gens implements CommandExecutor {
     private final PluginState state;
@@ -24,7 +22,7 @@ public class Gens implements CommandExecutor {
             return true;
         }
         for (Location loc : state.getPlayerData(player.getUniqueId()).getGenLocations()) {
-            gen.onGenEvent(player, loc.getBlock(), true);
+            gen.onGenRemoveEvent(player, loc.getBlock(), true);
         }
         return true;
     }

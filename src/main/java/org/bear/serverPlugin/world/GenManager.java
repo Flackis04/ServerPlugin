@@ -1,20 +1,16 @@
 package org.bear.serverPlugin.world;
 
+import org.bear.serverPlugin.ServerPlugin;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.utils.GenUtils;
 import org.bear.serverPlugin.utils.ItemUtils;
-import org.bear.serverPlugin.utils.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -44,7 +40,8 @@ public class GenManager {
 
         // Update genLocations for the player
         data.setGenLocations(genLocations);
-        if (state.getPlayerData(player.getUniqueId()).genIsActive) {
+        if (!state.getPlayerData(player.getUniqueId()).genIsActive) {
+            state.getPlayerData(player.getUniqueId()).genIsActive = true;
             startGenLoop(player);
         }
     }
@@ -52,7 +49,7 @@ public class GenManager {
     private final Map<UUID, BukkitRunnable> genLoopTasks = new HashMap<>();
 
     // Start the generator loop for a player
-    private void startGenLoop(Player player) {
+    public void startGenLoop(Player player) {
         UUID uuid = player.getUniqueId();
 
         // Cancel existing task if any
@@ -71,7 +68,7 @@ public class GenManager {
                 if (currentDelay != lastDelay) {
                     this.cancel();
                     Bukkit.getScheduler().runTaskLater(
-                            Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("ServerPlugin")),
+                            ServerPlugin.getPlugin(),
                             () -> startGenLoop(player),
                             1L
                     );
@@ -79,6 +76,8 @@ public class GenManager {
                 }
 
                 if (!state.getPlayerData(uuid).genIsActive) return;
+                if (!(state.getPlayerData(uuid).gensPlaced > 0)) return;
+                state.getPlayerData(uuid).genIsActive = true;
 
                 // Get all gen locations for the player
                 Set<Location> genLocations = state.getPlayerData(uuid).getGenLocations();
@@ -91,22 +90,11 @@ public class GenManager {
 
                     Block blockAbove = baseBlock.getRelative(BlockFace.UP);
                     if (blockAbove.getType() == Material.AIR) {
-                        MaterialUtils genDropMats = new MaterialUtils();
-                        Material dropMaterial = genDropMats.getRandomMaterialFromMap(state.valuables); // safer fallback
 
-                        ItemStack item = new ItemStack(dropMaterial);
-                        var meta = item.getItemMeta();
-                        if (meta != null) {
-                            List<String> lore = new ArrayList<>();
-                            String description = "Sell price: " + state.sellPrices.getOrDefault(dropMaterial, 0);
-                            lore.add(description);
-                            meta.setLore(lore);
-                            item.setItemMeta(meta);
-                        }
 
                         var dropped = blockAbove.getWorld().dropItem(
                                 blockAbove.getLocation().add(0.5, 0, 0.5),
-                                item
+                                GenUtils.randomValuable(state)
                         );
                         dropped.setVelocity(new Vector(0, 0.45, 0));
                     }
@@ -123,7 +111,7 @@ public class GenManager {
         );
     }
 
-    public void onGenEvent(Player player, Block block, Boolean isPickup) {
+    public void onGenRemoveEvent(Player player, Block block, Boolean isPickup) {
 
         if (state.getPlayerData(player.getUniqueId()).getGenLocations().contains(block.getLocation())) {
             if (isPickup){
@@ -145,6 +133,7 @@ public class GenManager {
             if (removed) {
                 playerData.setGenLocations(genLocations);
                 playerData.gensPlaced -= 1;
+                if (playerData.gensPlaced == 0) playerData.genIsActive = false;
                 player.sendMessage("§cRemoved gen. " + playerData.gensPlaced + "/" + playerData.slotLevel + " gens placed");
             }
         }

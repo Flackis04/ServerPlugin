@@ -9,6 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -117,5 +118,14 @@ public class ItemUtils {
 
         // Check if the item has the same metadata (custom name, lore, etc.)
         return item.isSimilar(getPhone()); // .isSimilar() compares the type and all relevant metadata
+    }
+
+    public static void ensureHasItems(Player player, PluginState state){
+        if (!player.getInventory().contains(ItemUtils.getPhone())) {
+            player.getInventory().addItem(ItemUtils.getPhone());
+        }
+        if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).gensPlaced == 0) {
+            player.getInventory().addItem(ItemUtils.getGen());
+        }
     }
 }
