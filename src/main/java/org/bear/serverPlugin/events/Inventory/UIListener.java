@@ -115,6 +115,31 @@ public class UIListener implements Listener {
                 }
             }
 
+            if (clickedItem.getType() == Material.GRASS_BLOCK &&
+                    clickedItem.hasItemMeta() &&
+                    clickedItem.getItemMeta().hasDisplayName() &&
+                    clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Island Expansion")) {
+
+                UUID playerId = player.getUniqueId();
+                var data = state.getPlayerData(playerId);
+
+                if (data.islandExpansionLevel >= state.maxIslandExpansionLevel) {
+                    player.sendMessage(ChatColor.RED + "Your Island area is as big as it gets (for now)");
+                } else {
+                    int price = state.islandExpansionLevelCosts.getOrDefault(data.islandExpansionLevel, 1);
+                    if (data.crypto >= price) {
+                        data.crypto -= price;
+                        data.islandExpansionLevel += 1;
+                        state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+                        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+                        state.upgradeUI.openUpgradeUI(player);
+                        player.sendMessage(ChatColor.GREEN + "Island expanded! You are now level " + data.islandExpansionLevel);
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Not enough Crypto! You need " + price);
+                    }
+                }
+            }
+
             if (clickedItem.getType() == Material.IRON_BLOCK &&
                     clickedItem.hasItemMeta() &&
                     clickedItem.getItemMeta().hasDisplayName() &&

@@ -8,6 +8,7 @@ import org.bear.serverPlugin.events.Inventory.QuantityUIListener;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.commands.ChunkIsland;
 import org.bear.serverPlugin.commands.Gens;
+import org.bear.serverPlugin.world.DecayConcept;
 import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,6 +46,7 @@ public class ServerPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state, gen), this);
         Bukkit.getPluginManager().registerEvents(new BlockListener(state, gen), this);
+        Bukkit.getPluginManager().registerEvents(new DecayConcept(), this);
 
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new QuantityUIListener(state), this); // ✅ Add this line

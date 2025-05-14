@@ -5,16 +5,16 @@ import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChunkIsland implements CommandExecutor {
 
-    private final Set<ChunkCoord> usedChunks = new HashSet<>();
-    private final Random random = new Random();
+    public static final Set<ChunkCoord> usedChunks = new HashSet<>();
+    public static final Map<UUID, ChunkCoord> playerIslandChunks = new ConcurrentHashMap<>();
+    private static final Random random = new Random();
     public PluginState state;
-    public static ChunkCoord newChunk;
+
 
     public void chunkIsland(PluginState state){
         this.state = state;
@@ -27,29 +27,59 @@ public class ChunkIsland implements CommandExecutor {
             return true;
         }
 
-        World world = player.getWorld(); // Can be customized
-        newChunk = findSafeChunk();
+        UUID playerId = player.getUniqueId();
+
+        // Handle "/is remove"
+        if (args.length == 1 && args[0].equalsIgnoreCase("remove")) {
+            ChunkCoord removed = playerIslandChunks.remove(playerId);
+            if (removed != null) {
+                usedChunks.remove(removed);
+                player.sendMessage(ChatColor.YELLOW + "Your island has been removed.");
+            } else {
+                player.sendMessage(ChatColor.RED + "You don't have an island to remove.");
+            }
+            return true;
+        }
+
+        // If player already has an island, teleport them to it
+        if (playerIslandChunks.containsKey(playerId)) {
+            ChunkCoord coord = playerIslandChunks.get(playerId);
+            World world = player.getWorld();
+            int x = coord.x * 16 + 8;
+            int z = coord.z * 16 + 8;
+            int y = world.getHighestBlockYAt(x, z) + 1;
+
+            player.teleport(new Location(world, x + 0.5, y, z + 0.5));
+            player.sendMessage(ChatColor.AQUA + "Teleported to your island.");
+            return true;
+        }
+
+        // Otherwise, create a new island
+        World world = player.getWorld();
+        ChunkCoord newChunk = findSafeChunk();
 
         usedChunks.add(newChunk);
+        playerIslandChunks.put(playerId, newChunk);
+
         int x = newChunk.x * 16 + 8;
         int z = newChunk.z * 16 + 8;
-        int y = random.nextInt(33) + 64;  // Random Y between 64 and 96
+        int y = random.nextInt(33) + 64;
 
-        // Create 16x16 platform
         for (int dx = -8; dx < 8; dx++) {
             for (int dz = -8; dz < 8; dz++) {
                 world.getBlockAt(x + dx, y, z + dz).setType(Material.GRASS_BLOCK);
             }
         }
 
-        // Teleport player
         player.teleport(new Location(world, x + 0.5, y + 1, z + 0.5));
         player.sendMessage(ChatColor.GREEN + "Welcome to your new island!");
 
         return true;
     }
 
-    private ChunkCoord findSafeChunk() {
+
+
+    public static ChunkCoord findSafeChunk() {
         World world = Bukkit.getWorlds().get(0); // Assumes the first world (can be changed)
         WorldBorder border = world.getWorldBorder();
 
@@ -74,13 +104,15 @@ public class ChunkIsland implements CommandExecutor {
             );
 
             if (safe) return test;
+
         }
     }
 
-    private static class ChunkCoord {
-        int x, z;
+    public static class ChunkCoord {
+        public int x;
+        public int z;
 
-        ChunkCoord(int x, int z) {
+        public ChunkCoord(int x, int z) {
             this.x = x;
             this.z = z;
         }

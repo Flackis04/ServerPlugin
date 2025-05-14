@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.utils.ItemUtils;
@@ -28,6 +29,7 @@ public class MarketUI {
 
         inv.addItem(createMarketItem(Material.DIRT, 2, player, true));
         inv.addItem(createMarketItem(Material.WOODEN_AXE, 100, player, false));
+        inv.addItem(createMarketItem(Material.SPLASH_POTION, 10000, player, false));
         inv.addItem(createMarketItemFromStack(ItemUtils.getPhone(), 25000, player, false));
 
         player.openInventory(inv);

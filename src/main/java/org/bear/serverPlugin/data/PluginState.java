@@ -1,6 +1,7 @@
 package org.bear.serverPlugin.data;
 
 import org.bear.serverPlugin.ScoreboardManager;
+import org.bear.serverPlugin.commands.ChunkIsland;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.utils.MaterialUtils;
 import org.bear.serverPlugin.world.GenManager;
@@ -40,6 +41,7 @@ public class PluginState {
     public final int maxDelayLevel = 4;
     public final int maxSlotLevel = 16;
     public final int maxIslandExpansionLevel = 9;
+    public Map<UUID, Integer> islandExpansionLevels = new HashMap<>(); // Default 1
     public final Map<Integer, Integer> delayLevelCosts;
     public final Map<Integer, Integer> slotLevelCosts;
     public final Map<Integer, Integer> islandExpansionLevelCosts;
