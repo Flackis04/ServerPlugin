@@ -6,7 +6,6 @@ import org.bear.serverPlugin.commands.ChunkIsland.ChunkCoord;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,9 +13,9 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class DecayConcept implements Listener {
-    public PluginState state;
+    private final PluginState state;
 
-    public void decayConcept(PluginState state) {
+    public DecayConcept(PluginState state) {
         this.state = state;
     }
 
@@ -26,10 +25,14 @@ public class DecayConcept implements Listener {
         Block block = event.getBlockPlaced();
         Chunk chunk = block.getChunk();
         ChunkCoord placedCoord = new ChunkCoord(chunk.getX(), chunk.getZ());
-
-        // ✅ Only skip decay if the block is placed in the player's island chunk
-        ChunkCoord playerIsland = ChunkIsland.playerIslandChunks.get(player.getUniqueId());
-        if (playerIsland != null && playerIsland.equals(placedCoord)) {
+        int chunksLeft = state.getPlayerData(player.getUniqueId()).islandExpansionLevel-ChunkIsland.usedChunks.size();
+        if (ChunkIsland.playerIslandChunks.containsValue(placedCoord)) {
+            return;
+        }
+        if (chunksLeft > 0){
+            ChunkIsland.usedChunks.add(placedCoord);
+            ChunkIsland.playerIslandChunks.put(player.getUniqueId(), placedCoord);
+            player.sendMessage("Chunksleft: " + chunksLeft + "/" + state.getPlayerData(player.getUniqueId()).islandExpansionLevel);
             return;
         }
 
@@ -45,7 +48,6 @@ public class DecayConcept implements Listener {
     private void startDecayAnimation(Block block) {
         Location loc = block.getLocation();
         World world = block.getWorld();
-        BlockData data = block.getBlockData();
 
         new BukkitRunnable() {
             int crackStage = 0;

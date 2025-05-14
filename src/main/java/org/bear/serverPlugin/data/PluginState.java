@@ -4,6 +4,7 @@ import org.bear.serverPlugin.ScoreboardManager;
 import org.bear.serverPlugin.commands.ChunkIsland;
 import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.utils.MaterialUtils;
+import org.bear.serverPlugin.world.DecayConcept;
 import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Material;
 
@@ -22,6 +23,7 @@ public class PluginState {
     public GenUI genUI;
     public GenMenuUI genMenuUI;
     public GenManager genManager;
+    public DecayConcept decayConcept;
     public final ScoreboardManager scoreboardManager;
     public Database database;
 
@@ -41,7 +43,6 @@ public class PluginState {
     public final int maxDelayLevel = 4;
     public final int maxSlotLevel = 16;
     public final int maxIslandExpansionLevel = 9;
-    public Map<UUID, Integer> islandExpansionLevels = new HashMap<>(); // Default 1
     public final Map<Integer, Integer> delayLevelCosts;
     public final Map<Integer, Integer> slotLevelCosts;
     public final Map<Integer, Integer> islandExpansionLevelCosts;
@@ -58,6 +59,7 @@ public class PluginState {
             GenUI genUI,
             GenMenuUI genMenuUI,
             GenManager genManager,
+            DecayConcept decayConcept,
             ScoreboardManager scoreboardManager,
             Database database
     ) {
@@ -69,14 +71,13 @@ public class PluginState {
         this.genUI = genUI;
         this.genMenuUI = genMenuUI;
         this.genManager = genManager;
+        this.decayConcept = decayConcept;
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 
-        MaterialUtils materialUtils = new MaterialUtils();
-
-        this.valuables = materialUtils.generateExponentialWeights(orderedMats, 0.27);
-        this.sellPrices = materialUtils.generateSellPrices(valuables, 10000);
-        this.seenMaterials = materialUtils.generateInitialSeenMap(orderedMats);
+        this.valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27);
+        this.sellPrices = MaterialUtils.generateSellPrices(valuables, 10000);
+        this.seenMaterials = MaterialUtils.generateInitialSeenMap(orderedMats);
         this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
         this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
         this.islandExpansionLevelCosts = generateLevelCosts(maxIslandExpansionLevel, 10000, 5000000, 3.25, true);

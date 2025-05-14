@@ -30,7 +30,7 @@ public class ServerPlugin extends JavaPlugin {
         database.createTables();  // Create the table if it doesn't exist
 
         // Step 1: Create an empty PluginState with null UIs (just for now)
-        PluginState state = new PluginState(null, null, null, null, null, null, null, null, scoreboardManager, database);
+        PluginState state = new PluginState(null, null, null, null, null, null, null, null, null, scoreboardManager, database);
         GenManager gen = new GenManager(state);
 
         // Step 3: Set those UIs back into the PluginState
@@ -41,12 +41,13 @@ public class ServerPlugin extends JavaPlugin {
         state.genUI = new GenUI(state);
         state.genMenuUI = new GenMenuUI(state);
         state.sellUI = new SellUI();
+        state.decayConcept = new DecayConcept(state);
 
         // Step 4: Register events using the complete state
         Bukkit.getPluginManager().registerEvents(new PlayerListener(state, database), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(state, gen), this);
         Bukkit.getPluginManager().registerEvents(new BlockListener(state, gen), this);
-        Bukkit.getPluginManager().registerEvents(new DecayConcept(), this);
+        Bukkit.getPluginManager().registerEvents(new DecayConcept(state), this);
 
         Bukkit.getPluginManager().registerEvents(new UIListener(state), this);
         Bukkit.getPluginManager().registerEvents(new QuantityUIListener(state), this); // ✅ Add this line
