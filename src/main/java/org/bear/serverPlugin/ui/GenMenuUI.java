@@ -39,8 +39,7 @@ public class GenMenuUI {
             meta.setDisplayName(ChatColor.GRAY + "Generator " + index);
 
             meta.setLore(Arrays.asList(
-                    ChatColor.DARK_GRAY + "Click for specs",
-                    ChatColor.GRAY + "Level: " + state.getPlayerData(player.getUniqueId()).genLevels.get(index)
+                    ChatColor.DARK_GRAY + "Click for specs"
             ));
 
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);

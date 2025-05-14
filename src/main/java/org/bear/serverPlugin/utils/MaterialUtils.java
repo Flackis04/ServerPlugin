@@ -6,31 +6,27 @@ import java.util.*;
 
 public class MaterialUtils {
 
-    // Method to generate exponential weights for materials
-    public static Map<Material, Double> generateExponentialWeights(List<Material> materials, double ratio) {
-        int count = materials.size();
-        double[] rawWeights = new double[count];
-        double sum = 0.0;
+    public static Map<Material, Double> generateExponentialWeights(List<Material> materials, double decay, int multiplierLevel) {
+        Map<Material, Double> weights = new LinkedHashMap<>();
+        double totalWeight = 0;
 
-        // Step 1: Compute exponential weights
-        for (int i = 0; i < count; i++) {
-            rawWeights[i] = Math.pow(ratio, i);
-            sum += rawWeights[i];
+        for (int i = 0; i < materials.size(); i++) {
+            double base = Math.pow(decay, i); // base decay
+            double levelMultiplier = Math.pow(multiplierLevel, 0.9); // you can tweak 0.9 for curve steepness
+            double weight = base * levelMultiplier;
+
+            weights.put(materials.get(i), weight);
+            totalWeight += weight;
         }
 
-        // Step 2: Normalize
-        for (int i = 0; i < count; i++) {
-            rawWeights[i] /= sum;
+        // Normalize to sum to 1 (optional but useful)
+        for (Map.Entry<Material, Double> entry : weights.entrySet()) {
+            weights.put(entry.getKey(), entry.getValue() / totalWeight);
         }
 
-        // Step 3: Assign to materials
-        Map<Material, Double> valueMap = new LinkedHashMap<>();
-        for (int i = 0; i < count; i++) {
-            valueMap.put(materials.get(i), rawWeights[i]);
-        }
-
-        return valueMap;
+        return weights;
     }
+
 
     // Method to get a random material based on weighted probabilities
     public static Material getRandomMaterialFromMap(Map<Material, Double> weightedMap) {

@@ -26,13 +26,16 @@ public class DecayConcept implements Listener {
         Chunk chunk = block.getChunk();
         ChunkCoord placedCoord = new ChunkCoord(chunk.getX(), chunk.getZ());
         int chunksLeft = state.getPlayerData(player.getUniqueId()).islandExpansionLevel-ChunkIsland.usedChunks.size();
+
         if (ChunkIsland.playerIslandChunks.containsValue(placedCoord)) {
             return;
         }
+
         if (chunksLeft > 0){
             ChunkIsland.usedChunks.add(placedCoord);
             ChunkIsland.playerIslandChunks.put(player.getUniqueId(), placedCoord);
-            player.sendMessage("Chunksleft: " + chunksLeft + "/" + state.getPlayerData(player.getUniqueId()).islandExpansionLevel);
+            player.sendMessage("§aYou claimed a chunk!");
+            player.sendMessage("Chunksleft: " + (chunksLeft-1) + "/" + state.getPlayerData(player.getUniqueId()).islandExpansionLevel);
             return;
         }
 

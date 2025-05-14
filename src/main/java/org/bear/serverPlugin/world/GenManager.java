@@ -94,7 +94,7 @@ public class GenManager {
 
                         var dropped = blockAbove.getWorld().dropItem(
                                 blockAbove.getLocation().add(0.5, 0, 0.5),
-                                GenUtils.randomValuable(state)
+                                GenUtils.randomValuable(state, player)
                         );
                         dropped.setVelocity(new Vector(0, 0.45, 0));
                     }

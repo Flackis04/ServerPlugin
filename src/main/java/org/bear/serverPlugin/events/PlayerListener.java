@@ -50,10 +50,6 @@ public class PlayerListener implements Listener {
             playerData = new PlayerData();
             database.updatePlayerData(playerId, playerData);  // Save default data if no data exists for the player
         }
-
-        // Now, playerData should never be null here
-        String serializedInventory = InventoryUtils.serializeInventory(playerData.getInventoryItems());
-        player.sendMessage("Your serialized inventory: " + serializedInventory);
     }
 
     @EventHandler

@@ -30,7 +30,7 @@ public class ItemUtils {
     }
 
     public static ItemStack getPhone(){
-        ItemStack phone = new ItemStack(Material.DIRT);
+        ItemStack phone = new ItemStack(Material.CRYING_OBSIDIAN);
 
         CustomModelData phoneData = CustomModelData
                 .customModelData()           // obtain a new builder :contentReference[oaicite:0]{index=0}

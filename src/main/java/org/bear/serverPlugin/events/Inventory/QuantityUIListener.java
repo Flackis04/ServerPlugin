@@ -69,7 +69,6 @@ public class QuantityUIListener implements Listener {
 
         selectedQuantities.put(uuid, quantity);
         state.marketUI.openQuantityUI(player, selectedMaterials.get(uuid), itemCosts.get(uuid), quantity);
-        player.sendMessage(Component.text("Selected Quantity: " + quantity).color(NamedTextColor.YELLOW));
     }
 
     private void handleConfirm(Player player, UUID uuid, int quantity) {
@@ -81,7 +80,6 @@ public class QuantityUIListener implements Listener {
             state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
             player.getInventory().addItem(new ItemStack(material, quantity));
             player.sendMessage(Component.text("Purchased " + quantity + " " + material.name() + " for " + cost + " crypto.").color(NamedTextColor.GREEN));
-            player.closeInventory();
         } else {
             player.sendMessage(Component.text("You do not have enough crypto.").color(NamedTextColor.RED));
         }

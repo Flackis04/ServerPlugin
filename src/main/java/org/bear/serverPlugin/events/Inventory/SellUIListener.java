@@ -31,7 +31,7 @@ public class SellUIListener implements Listener {
 
         if ( title.equalsIgnoreCase("SELL")) {
             Inventory closedInventory = event.getInventory();
-            Map<Material, Integer> foundItems = getMaterialIntegerMap(event, state.sellPrices);
+            Map<Material, Integer> foundItems = getMaterialIntegerMap(player, event, state.getPlayerData(player.getUniqueId()).sellPrices);
             int totalProfit = 0;
             Set<Integer> processedSlots = new HashSet<>();
 
@@ -42,17 +42,15 @@ public class SellUIListener implements Listener {
                     if (item != null && item.getType() != Material.AIR) {
                         Material material = item.getType();
                         // Check if the item is sellable
-                        if (state.valuables.containsKey(material)) {
+                        if (state.getPlayerData(player.getUniqueId()).valuables.containsKey(material)) {
                             ItemMeta meta = item.getItemMeta();
                             if (meta != null && meta.hasLore()) {
                                 for (String line : meta.getLore()) {
                                     if (line.contains("Sell price:")) {
                                         int amount = item.getAmount();
-                                        int pricePerItem = state.sellPrices.getOrDefault(material, 0);
+                                        int pricePerItem = state.getPlayerData(player.getUniqueId()).sellPrices.getOrDefault(material, 0);
                                         int value = amount * pricePerItem;
                                         totalProfit += value;
-
-                                        player.sendMessage("§6" + material + ": §f" + amount + " x " + pricePerItem + "C = §a" + value + "C");
                                         processedSlots.add(i);
                                     }
                                 }
@@ -60,7 +58,7 @@ public class SellUIListener implements Listener {
                         }
                     }
                 }
-                player.sendMessage("§aTotal Profit: §2" + totalProfit + "C");
+                player.sendMessage("§aSold valuables for: §2" + totalProfit + "C");
                 state.getPlayerData(player.getUniqueId()).crypto += totalProfit;
                 state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
             }
@@ -76,7 +74,7 @@ public class SellUIListener implements Listener {
         }
     }
 
-    private Map<Material, Integer> getMaterialIntegerMap(InventoryCloseEvent event, Map<Material, Integer> sellPrices) {
+    private Map<Material, Integer> getMaterialIntegerMap(Player player, InventoryCloseEvent event, Map<Material, Integer> sellPrices) {
         Inventory closedInventory = event.getInventory();
         Map<Material, Integer> foundItems = new HashMap<>();
 
@@ -84,7 +82,7 @@ public class SellUIListener implements Listener {
             if (item == null || item.getType() == Material.AIR) continue;
             Material material = item.getType();
 
-            if (state.valuables.containsKey(material)) {
+            if (state.getPlayerData(player.getUniqueId()).valuables.containsKey(material)) {
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null && meta.hasLore()) {
                     for (String line : meta.getLore()) {
@@ -97,7 +95,6 @@ public class SellUIListener implements Listener {
                 }
             }
         }
-
         return foundItems;
     }
 }

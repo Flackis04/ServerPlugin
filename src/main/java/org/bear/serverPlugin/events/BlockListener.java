@@ -72,7 +72,7 @@ public class BlockListener implements Listener {
 
         ItemStack item = event.getItem().getItemStack();
         Material mat = item.getType();
-        state.seenMaterials.put(mat, true);
+        state.getPlayerData(player.getUniqueId()).seenMaterials.put(mat, true);
 
         boolean hasSellPrice = false;
         ItemMeta meta = item.getItemMeta();
@@ -87,7 +87,7 @@ public class BlockListener implements Listener {
 
         PlayerData data = state.getPlayerData(player.getUniqueId());
 
-        if (hasSellPrice && state.orderedMats.contains(mat) && state.seenMaterials.getOrDefault(mat, false)) {
+        if (hasSellPrice && state.orderedMats.contains(mat) && state.getPlayerData(player.getUniqueId()).seenMaterials.getOrDefault(mat, false)) {
             if (!data.getMatInCollection().contains(mat)) {
                 data.getMatInCollection().add(mat);
                 state.collectionUI.createCollectionMat(mat);

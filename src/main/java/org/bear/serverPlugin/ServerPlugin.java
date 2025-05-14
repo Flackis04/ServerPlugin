@@ -13,6 +13,8 @@ import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
+
 public class ServerPlugin extends JavaPlugin {
     private static ServerPlugin plugin;
     private Database database;
@@ -55,8 +57,8 @@ public class ServerPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new UpgradeUIListener(state), this);
 
         // Register commands
-        getCommand("is").setExecutor(new ChunkIsland());
-        getCommand("getgens").setExecutor(new Gens(state, gen));
+        Objects.requireNonNull(getCommand("is")).setExecutor(new ChunkIsland());
+        Objects.requireNonNull(getCommand("getgens")).setExecutor(new Gens(state, gen));
 
         getLogger().info("ServerPlugin enabled on Minecraft 1.21");
     }

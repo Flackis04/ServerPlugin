@@ -36,10 +36,6 @@ public class PluginState {
             Material.NETHERITE_SCRAP, Material.NETHERITE_INGOT
     );
 
-    public final Map<Material, Double> valuables;
-    public final Map<Material, Boolean> seenMaterials;
-    public final Map<Material, Integer> sellPrices;
-
     public final int maxDelayLevel = 4;
     public final int maxSlotLevel = 16;
     public final int maxIslandExpansionLevel = 9;
@@ -75,9 +71,6 @@ public class PluginState {
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 
-        this.valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27);
-        this.sellPrices = MaterialUtils.generateSellPrices(valuables, 10000);
-        this.seenMaterials = MaterialUtils.generateInitialSeenMap(orderedMats);
         this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
         this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
         this.islandExpansionLevelCosts = generateLevelCosts(maxIslandExpansionLevel, 10000, 5000000, 3.25, true);
