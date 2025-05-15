@@ -32,7 +32,8 @@ public class UpgradeUI {
 
     public ItemStack createIslandUpgradeBtn(Player player) {
         PlayerData data = state.getPlayerData(player.getUniqueId());
-        int currentLevel = data.islandExpansionLevel;  // Now using islandLevel
+        //int currentLevel = data.islandExpansionLevel;  // Now using islandLevel
+        int currentLevel = 2;
         Map<Integer, Integer> costs = state.islandExpansionLevelCosts;  // islandLevelCosts map
         int cost = costs.getOrDefault(currentLevel, 0);
         boolean canAfford = data.crypto >= cost;

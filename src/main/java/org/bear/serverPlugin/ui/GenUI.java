@@ -33,9 +33,10 @@ public class GenUI {
 
     public ItemStack createCpuItem(Player player) {
         PlayerData data = state.getPlayerData(player.getUniqueId());
-        int currentLevel = data.delayLevel;
-        Map<Integer, Integer> costs = state.delayLevelCosts;
-        int cost = costs.getOrDefault(currentLevel, 0);
+        //int currentLevel = data.delayLevel;
+        int currentLevel = 2;
+        //int cost = costs.getOrDefault(currentLevel, 0);
+        int cost = 2;
         boolean canAfford = data.crypto >= cost;
 
         ItemStack item = new ItemStack(Material.EMERALD_BLOCK);
@@ -63,9 +64,9 @@ public class GenUI {
 
     public ItemStack createSlotItem(Player player) {
         PlayerData data = state.getPlayerData(player.getUniqueId());
-        int currentLevel = data.slotLevel;
-        Map<Integer, Integer> costs = state.slotLevelCosts;
-        int cost = costs.getOrDefault(currentLevel, 0);
+        int currentLevel = data.maxGenerators;
+        //int cost = costs.getOrDefault(currentLevel, 0);
+        int cost = 2;
         boolean canAfford = data.crypto >= cost;
 
         ItemStack item = new ItemStack(Material.BARREL);

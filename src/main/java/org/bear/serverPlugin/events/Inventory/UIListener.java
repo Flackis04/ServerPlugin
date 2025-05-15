@@ -1,5 +1,8 @@
 package org.bear.serverPlugin.events.Inventory;
 
+import org.bear.serverPlugin.data.Island;
+import org.bear.serverPlugin.data.PlayerData;
+import org.bear.serverPlugin.data.PlayerGenerator;
 import org.bear.serverPlugin.data.PluginState;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,6 +37,8 @@ public class UIListener implements Listener {
             event.setCancelled(true);  // ✅ Cancel the event ONLY if it's the "Phone" menu
 
             Player player = (Player) event.getWhoClicked();
+            PlayerData playerData = state.getPlayerData(player.getUniqueId());
+            Set<PlayerGenerator> playerGenerators = playerData.generators;
             ItemStack clickedItem = event.getCurrentItem();
 
             if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
@@ -73,17 +78,18 @@ public class UIListener implements Listener {
                     clickedItem.hasItemMeta() &&
                     clickedItem.getItemMeta().hasDisplayName() &&
                     clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "CPU")) {
-                if (state.getPlayerData(player.getUniqueId()).delayLevel >= state.maxDelayLevel) {
+                if (playerGenerators.iterator().next().delayLevel >= state.maxDelayLevel) {
                     player.sendMessage(ChatColor.RED + "There exists no better CPU at the moment");
                 } else {
-                    int price = state.delayLevelCosts.getOrDefault(state.getPlayerData(player.getUniqueId()).delayLevel, 1);
-                    if (state.getPlayerData(player.getUniqueId()).crypto >= price) {
-                        state.getPlayerData(player.getUniqueId()).crypto -= price;
-                        state.getPlayerData(player.getUniqueId()).delayLevel += 1;
+                    //int price = .delayLevelCosts.getOrDefault(playerGenerators.iterator().next().delayLevel, 1);
+                    int price = 2;
+                    if (playerData.crypto >= price) {
+                        playerData.crypto -= price;
+                        playerGenerators.iterator().next().delayLevel += 1;
 
 
-                        player.sendMessage("New CPU chip installed: Intel Core i" + state.getPlayerData(player.getUniqueId()).delayLevel);
-                        state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+                        player.sendMessage("New CPU chip installed: Intel Core i" + playerGenerators.iterator().next().delayLevel);
+                        state.scoreboardManager.updateCrypto(player, playerData.crypto);
                         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
                         state.genUI.openGenUI(player);
                     } else {
@@ -96,17 +102,18 @@ public class UIListener implements Listener {
                     clickedItem.hasItemMeta() &&
                     clickedItem.getItemMeta().hasDisplayName() &&
                     clickedItem.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Storage")) {
-                if (state.getPlayerData(player.getUniqueId()).slotLevel >= state.maxSlotLevel) {
+                if (playerData.maxGenerators >= state.maxSlotLevel) {
                     player.sendMessage(ChatColor.RED + "Your Storage is maxed out brother");
                 } else {
-                    int price = state.slotLevelCosts.getOrDefault(state.getPlayerData(player.getUniqueId()).slotLevel, 1);
-                    if (state.getPlayerData(player.getUniqueId()).crypto >= price) {
-                        state.getPlayerData(player.getUniqueId()).crypto -= price;
-                        state.getPlayerData(player.getUniqueId()).slotLevel += 1;
+                    //int price = state.slotLevelCosts.getOrDefault(playerData.slotLevel, 1);
+                    int price = 2;
+                    if (playerData.crypto >= price) {
+                        playerData.crypto -= price;
+                        playerData.maxGenerators += 1;
 
 
-                        player.sendMessage("Storage count increased to " + state.getPlayerData(player.getUniqueId()).slotLevel);
-                        state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+                        player.sendMessage("Storage count increased to " + playerData.maxGenerators);
+                        state.scoreboardManager.updateCrypto(player, playerData.crypto);
                         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
                         state.genUI.openGenUI(player);
                     } else {
@@ -122,18 +129,19 @@ public class UIListener implements Listener {
 
                 UUID playerId = player.getUniqueId();
                 var data = state.getPlayerData(playerId);
-
-                if (data.islandExpansionLevel >= state.maxIslandExpansionLevel) {
+                Island island = data.islands.iterator().next();
+                
+                if (island.expansionLevel >= state.maxIslandExpansionLevel) {
                     player.sendMessage(ChatColor.RED + "Your Island area is as big as it gets (for now)");
                 } else {
-                    int price = state.islandExpansionLevelCosts.getOrDefault(data.islandExpansionLevel, 1);
+                    int price = state.islandExpansionLevelCosts.getOrDefault(island.expansionLevel, 1);
                     if (data.crypto >= price) {
                         data.crypto -= price;
-                        data.islandExpansionLevel += 1;
-                        state.scoreboardManager.updateCrypto(player, state.getPlayerData(player.getUniqueId()).crypto);
+                        island.expansionLevel += 1;
+                        state.scoreboardManager.updateCrypto(player, playerData.crypto);
                         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
                         state.upgradeUI.openUpgradeUI(player);
-                        player.sendMessage(ChatColor.GREEN + "Island expanded! You are now level " + data.islandExpansionLevel);
+                        player.sendMessage(ChatColor.GREEN + "Island expanded! You are now level " + island.expansionLevel);
                     } else {
                         player.sendMessage(ChatColor.RED + "Not enough Crypto! You need " + price);
                     }

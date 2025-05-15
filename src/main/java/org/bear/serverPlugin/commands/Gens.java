@@ -21,7 +21,7 @@ public class Gens implements CommandExecutor {
             sender.sendMessage("Only players can use this command.");
             return true;
         }
-        for (Location loc : state.getPlayerData(player.getUniqueId()).getGenLocations()) {
+        for (Location loc : state.getPlayerData(player.getUniqueId()).getGenerators()) {
             gen.onGenRemoveEvent(player, loc.getBlock(), true);
         }
         return true;

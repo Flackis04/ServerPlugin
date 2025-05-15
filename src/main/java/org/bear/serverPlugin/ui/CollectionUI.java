@@ -30,7 +30,7 @@ public class CollectionUI {
 
         // Add all collected materials to the inventory
         int slot = 0;
-        for (Material mat : state.getPlayerData(player.getUniqueId()).getMatInCollection()) {
+        for (Material mat : state.getPlayerData(player.getUniqueId()).seenMaterials) {
             if (slot >= inv.getSize()) break;  // Prevent overflow if collection is too large
             inv.setItem(slot, createCollectionMat(mat));
             slot++;

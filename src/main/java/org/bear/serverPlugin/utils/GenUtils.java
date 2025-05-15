@@ -11,12 +11,12 @@ import java.util.List;
 public class GenUtils {
     public static ItemStack randomValuable(PluginState state, Player player) {
 
-        ItemStack item = new ItemStack(MaterialUtils.getRandomMaterialFromMap(state.getPlayerData(player.getUniqueId()).valuables));
+        ItemStack item = new ItemStack(MaterialUtils.getRandomMaterialFromMap(state.valuables));
         var meta = item.getItemMeta();
         if (meta != null) {
             List<String> lore = new ArrayList<>();
             Material type = item.getType();
-            int sellPrice = state.getPlayerData(player.getUniqueId()).sellPrices.getOrDefault(type, 0);
+            int sellPrice = state.sellPrices.getOrDefault(type, 0);
 
             String description = "Sell price: " + sellPrice + "\n" +
                     "Drop chance: " + String.format("%.2f", "dropchance") + "%";

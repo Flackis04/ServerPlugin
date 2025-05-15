@@ -1,15 +1,11 @@
 package org.bear.serverPlugin.data;
 
-import org.bear.serverPlugin.utils.GenUtils;
-import org.bear.serverPlugin.utils.InventoryUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Database {
@@ -41,22 +37,45 @@ public class Database {
     }
 
     public void createTables() {
-        String createPlayersTable = "CREATE TABLE IF NOT EXISTS players (" +
+        String statements = "";
+        statements += "CREATE TABLE IF NOT EXISTS players (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "crypto INTEGER," +
-                "delayLevel INTEGER," +
-                "slotLevel INTEGER," +
-                "islandExpansionLevel INTEGER," +
-                "matInCollection TEXT" +
+                "crypto INTEGER DEFAULT 0," +
+                "maxGenerators INTEGER DEFAULT 0," +
+                "multiplier INTEGER DEFAULT 0," +
                 ");";
 
-        String createGeneratorsTable = "CREATE TABLE IF NOT EXISTS generators (" +
+        statements += "CREATE TABLE IF NOT EXISTS materials (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT" +
+                ");";
+
+        statements += "CREATE TABLE IF NOT EXISTS playerSeenMaterials (" +
+                "player INTEGER PRIMARY KEY," +
+                "material INTEGER PRIMARY KEY," +
+                "FOREIGN KEY (player) REFERENCES players (id)," +
+                "FOREIGN KEY (material) REFERENCES materials (id)," +
+                ");";
+
+        statements += "CREATE TABLE IF NOT EXISTS islands (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "player INTEGER," +
+                "expansionLevel INTEGER," +
+                "FOREIGN KEY (player) REFERENCES players (id)," +
+                ");";
+
+        statements += "CREATE TABLE IF NOT EXISTS generators (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
-                "block TEXT" +
+                "block TEXT," +
+                "delayLevelCost INTEGER," +
+                "overclockLevelCost INTEGER," +
+                "shardLevelCost INTEGER," +
+                "beaconLevelCost INTEGER," +
+                "fortuneLevelCost INTEGER," +
                 ");";
 
-        String createLocationsTable = "CREATE TABLE IF NOT EXISTS locations (" +
+        statements += "CREATE TABLE IF NOT EXISTS locations (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "x INTEGER," +
                 "y INTEGER," +
@@ -64,21 +83,30 @@ public class Database {
                 "worldName TEXT" +
                 ");";
 
-        String createPlayerGeneratorsTable = "CREATE TABLE IF NOT EXISTS playergenerators (" +
+        statements += "CREATE TABLE IF NOT EXISTS islandChunks (" +
+                "island INTEGER PRIMARY KEY," +
+                "location INTEGER PRIMARY KEY," +
+                "FOREIGN KEY (island) REFERENCES islands (id)," +
+                "FOREIGN KEY (location) REFERENCES locations (id)," +
+                ");";
+
+        statements += "CREATE TABLE IF NOT EXISTS playerGenerators (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "location INTEGER," +
                 "generator INTEGER," +
                 "player INTEGER," +
+                "delayLevel INTEGER DEFAULT 0," +
+                "overclockLevel INTEGER DEFAULT 0," +
+                "shardLevel INTEGER DEFAULT 0," +
+                "beaconLevel INTEGER DEFAULT 0," +
+                "fortuneLevel INTEGER DEFAULT 0," +
                 "FOREIGN KEY (player) REFERENCES players (id)," +
                 "FOREIGN KEY (location) REFERENCES locations (id)," +
                 "FOREIGN KEY (generator) REFERENCES generators (id)" +
                 ");";
 
         try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(createPlayersTable);
-            statement.executeUpdate(createGeneratorsTable);
-            statement.executeUpdate(createLocationsTable);
-            statement.executeUpdate(createPlayerGeneratorsTable);
+            statement.executeUpdate(statements);
             System.out.println("All tables created or already exist.");
         } catch (SQLException e) {
             System.err.println("Table creation failed: " + e.getMessage());
@@ -87,8 +115,8 @@ public class Database {
 
 
     public void insertPlayerData(int playerId) {
-        String sql = "INSERT OR IGNORE INTO players (id, crypto, delayLevel, slotLevel, islandExpansionLevel, matInCollection) " +
-                "VALUES (?, 0, 1, 1, 1, '')";
+        String sql = "INSERT OR IGNORE INTO players (id) " +
+                "VALUES (?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, playerId);
             stmt.executeUpdate();
@@ -101,22 +129,17 @@ public class Database {
 
     public void updatePlayerData(int playerId, PlayerData playerData) {
         String sql = "UPDATE players SET " +
-                "crypto = ?, delayLevel = ?, slotLevel = ?, islandExpansionLevel = ?, " +
-                "matInCollection = ? " +
+                "crypto = ? " +
                 "WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, playerData.crypto);
-            stmt.setInt(2, playerData.delayLevel);
-            stmt.setInt(3, playerData.slotLevel);
-            stmt.setInt(4, playerData.islandExpansionLevel);
+            stmt.setInt(2, playerId);
 
-            String materialsString = String.join(",", playerData.getMatInCollection().stream()
-                    .map(Material::name)
-                    .toArray(String[]::new));
+            //TODO: add seenmaterials
+            //TODO: add playergenerators
 
-            stmt.setString(5, materialsString);
-            stmt.setInt(6, playerId);
+
 
             stmt.executeUpdate();
             System.out.println("Player data updated.");
@@ -127,50 +150,109 @@ public class Database {
 
 
     public PlayerData loadPlayerData(int playerId) {
-        String sql = "SELECT * FROM players WHERE id = ?";
-        PlayerData playerData = null;
+        PlayerData playerData = new PlayerData();
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        String playerDataStatement = "SELECT * FROM players WHERE id = ? ";
+
+        try (PreparedStatement stmt = connection.prepareStatement(playerDataStatement)) {
             stmt.setInt(1, playerId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int crypto = rs.getInt("crypto");
-                    int delayLevel = rs.getInt("delayLevel");
-                    int slotLevel = rs.getInt("slotLevel");
-                    int islandExpansionLevel = rs.getInt("islandExpansionLevel");
-
-                    Set<Material> materials = new HashSet<>();
-                    String materialsString = rs.getString("matInCollection");
-
-                    if (materialsString != null && !materialsString.isEmpty()) {
-                        String[] materialNames = materialsString.split(",");
-                        for (String name : materialNames) {
-                            Material material = Material.getMaterial(name);
-                            if (material != null) {
-                                materials.add(material);
-                            } else {
-                                System.err.println("Unknown material in DB: " + name);
-                            }
-                        }
-                    }
-
-                    playerData = new PlayerData(
-                            crypto,
-                            delayLevel,
-                            slotLevel,
-                            islandExpansionLevel,
-                            true,
-                            new HashSet<>(),  // Placeholder for genLocations
-                            materials,
-                            new ArrayList<>() // Placeholder for inventoryItems
-                    );
+                    playerData.crypto = rs.getInt("crypto");
                 }
             }
         } catch (SQLException e) {
             System.err.println("Load player data failed: " + e.getMessage());
         }
 
+        String playerGeneratorsStatement = "SELECT * FROM playerGenerators WHERE player = ? " +
+                "JOIN generators ON generators.id = generator " +
+                "JOIN locations ON locations.id = location";
+
+        try (PreparedStatement stmt = connection.prepareStatement(playerGeneratorsStatement)) {
+            stmt.setInt(1, playerId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    PlayerGenerator playerGeneratorData = new PlayerGenerator();
+                    playerGeneratorData.location = rs.getObject("locations.id") != null ? new Location(
+                            Bukkit.getServer().getWorld(rs.getString("locations.worldName")),
+                            rs.getInt("locations.x"),
+                            rs.getInt("locations.y"),
+                            rs.getInt("locations.z")
+                            ) : null;
+                    playerGeneratorData.delayLevel = rs.getInt("delayLevel");
+                    playerGeneratorData.delayLevelCost = rs.getInt("generators.delayLevelCost");
+
+                    playerGeneratorData.overclockLevel = rs.getInt("overclockLevel");
+                    playerGeneratorData.overclockLevelCost = rs.getInt("generators.overclockLevelCost");
+
+                    playerGeneratorData.shardLevel = rs.getInt("shardLevel");
+                    playerGeneratorData.shardLevelCost = rs.getInt("generators.shardLevelCost");
+
+                    playerGeneratorData.beaconLevel = rs.getInt("beaconLevel");
+                    playerGeneratorData.beaconLevelCost = rs.getInt("generators.beaconLevelCost");
+
+                    playerGeneratorData.fortuneLevel = rs.getInt("fortuneLevel");
+                    playerGeneratorData.fortuneLevelCost = rs.getInt("generators.fortuneLevelCost");
+
+
+                    playerData.generators.add(playerGeneratorData);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Load player generator data failed: " + e.getMessage());
+        }
+
+        String playerSeenMaterialsStatement = "SELECT * FROM playerSeenMaterials WHERE player = ? " +
+                "JOIN materials ON materials.id = material";
+
+        try (PreparedStatement stmt = connection.prepareStatement(playerSeenMaterialsStatement)) {
+            stmt.setInt(1, playerId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    playerData.seenMaterials.add(Material.getMaterial(rs.getString("materials.name")));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Load player seen materials failed: " + e.getMessage());
+        }
+
         return playerData;
     }
+
+    //TODO implement
+    public Set<Island> playerIslands(){
+        return new HashSet<>();
+    }
+
+    /*
+            String playerIslandsStatement = "SELECT * FROM islands WHERE player = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(playerIslandsStatement)) {
+            stmt.setInt(1, playerId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String playerIslandsStatement = "SELECT * FROM islands WHERE player = ?";
+                    try (PreparedStatement stmt = connection.prepareStatement(playerIslandsStatement)) {
+                        stmt.setInt(1, playerId);
+
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            while (rs.next()) {
+                                playerData.seenMaterials.add(Material.getMaterial(rs.getString("materials.name")));
+
+                            }
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Load player islands failed: " + e.getMessage());
+                    }
+
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Load player islands failed: " + e.getMessage());
+        }
+     */
 }

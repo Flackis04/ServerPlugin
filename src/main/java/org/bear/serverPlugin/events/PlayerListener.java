@@ -3,7 +3,6 @@ package org.bear.serverPlugin.events;
 import org.bear.serverPlugin.data.Database;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.utils.InventoryUtils;
 import org.bear.serverPlugin.utils.ItemUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,9 +26,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (state.getPlayerData(player.getUniqueId()).gensPlaced > 0 && state.getPlayerData(player.getUniqueId()).genIsActive){
+        if (state.getPlayerData(player.getUniqueId()).generators.stream().anyMatch(gen -> gen.location != null)){
             state.genManager.startGenLoop(player);
-            player.sendMessage(String.valueOf(state.getPlayerData(player.getUniqueId()).gensPlaced));
+            player.sendMessage(String.valueOf(state.getPlayerData(player.getUniqueId()).generators.stream().filter(gen -> gen.location != null).count()));
         }
 
         // Create a scoreboard for the player

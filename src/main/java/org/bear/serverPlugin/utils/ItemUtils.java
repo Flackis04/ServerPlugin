@@ -124,7 +124,7 @@ public class ItemUtils {
         if (!player.getInventory().contains(ItemUtils.getPhone())) {
             player.getInventory().addItem(ItemUtils.getPhone());
         }
-        if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).gensPlaced == 0) {
+        if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).generators.stream().noneMatch(gen -> gen.location !=null)) {
             player.getInventory().addItem(ItemUtils.getGen());
         }
     }

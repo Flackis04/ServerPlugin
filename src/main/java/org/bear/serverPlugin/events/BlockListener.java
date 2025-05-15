@@ -1,5 +1,6 @@
 package org.bear.serverPlugin.events;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.utils.ItemUtils;
@@ -37,21 +38,17 @@ public class BlockListener implements Listener {
         if (itemInHand.equals(ItemUtils.getGen())) {
             PlayerData playerData = state.getPlayerData(player.getUniqueId());
 
-            if (playerData.gensPlaced < playerData.slotLevel) {
+            if (playerData.generators.stream().filter(gen -> gen.location != null).count() < playerData.maxGenerators) {
                 Location loc = placedBlock.getLocation();
 
                 // Add the new location to the player's gen locations set
-                Set<Location> genLocations = playerData.getGenLocations();
-                genLocations.add(loc);
-                playerData.setGenLocations(genLocations);
+                //genLocations.add(loc);
+                //playerData.generators
 
                 // Place the generator
                 gen.placeGenForPlayer(player, loc);
 
-                // Update gensPlaced
-                playerData.gensPlaced += 1;
-
-                player.sendMessage("§aPlaced gens: " + playerData.gensPlaced + "/" + playerData.slotLevel);
+                //player.sendMessage("§aPlaced gens: " + playerData.gensPlaced + "/" + playerData.slotLevel);
             } else {
                 Bukkit.broadcastMessage("Someone is duping");
             }
@@ -72,7 +69,7 @@ public class BlockListener implements Listener {
 
         ItemStack item = event.getItem().getItemStack();
         Material mat = item.getType();
-        state.getPlayerData(player.getUniqueId()).seenMaterials.put(mat, true);
+        state.getPlayerData(player.getUniqueId()).seenMaterials.add(mat);
 
         boolean hasSellPrice = false;
         ItemMeta meta = item.getItemMeta();
@@ -87,12 +84,11 @@ public class BlockListener implements Listener {
 
         PlayerData data = state.getPlayerData(player.getUniqueId());
 
-        if (hasSellPrice && state.orderedMats.contains(mat) && state.getPlayerData(player.getUniqueId()).seenMaterials.getOrDefault(mat, false)) {
-            if (!data.getMatInCollection().contains(mat)) {
-                data.getMatInCollection().add(mat);
-                state.collectionUI.createCollectionMat(mat);
-                //state.collectionUI.updateCollectionUI(player);
-            }
+        if (hasSellPrice && state.orderedMats.contains(mat) && !data.seenMaterials.contains(mat)) {
+            data.seenMaterials.add(mat);
+            state.collectionUI.createCollectionMat(mat);
+            //state.collectionUI.updateCollectionUI(player);
         }
     }
 }
+

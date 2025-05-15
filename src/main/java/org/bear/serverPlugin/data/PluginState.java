@@ -28,6 +28,7 @@ public class PluginState {
     public Database database;
 
 
+
     // Shared item-related data
     public final List<Material> orderedMats = List.of(
             Material.DIRT, Material.STONE, Material.COAL,
@@ -35,12 +36,15 @@ public class PluginState {
             Material.DIAMOND, Material.EMERALD,
             Material.NETHERITE_SCRAP, Material.NETHERITE_INGOT
     );
+    public Map<Material, Double> valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27, 1);
+//    public Map<Material, Double> valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27, multiplierLevel);
+
+    public Map<Material, Integer> sellPrices = MaterialUtils.generateSellPrices(this.valuables, 10000);
+
 
     public final int maxDelayLevel = 4;
     public final int maxSlotLevel = 16;
     public final int maxIslandExpansionLevel = 9;
-    public final Map<Integer, Integer> delayLevelCosts;
-    public final Map<Integer, Integer> slotLevelCosts;
     public final Map<Integer, Integer> islandExpansionLevelCosts;
 
     // Per-player data map
@@ -71,8 +75,8 @@ public class PluginState {
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 
-        this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
-        this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
+        //this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
+        //this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
         this.islandExpansionLevelCosts = generateLevelCosts(maxIslandExpansionLevel, 10000, 5000000, 3.25, true);
     }
 
@@ -87,7 +91,8 @@ public class PluginState {
     }
 
     public int getDelayTicks(Player player) {
-        int delayLevel = getPlayerData(player.getUniqueId()).delayLevel;
+        //int delayLevel = getPlayerData(player.getUniqueId()).delayLevel;
+        int delayLevel = 1;
         return Math.max(1, Math.min(15 - (delayLevel * 3), 15));
     }
 
