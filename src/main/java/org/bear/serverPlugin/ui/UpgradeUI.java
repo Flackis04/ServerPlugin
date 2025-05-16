@@ -1,13 +1,12 @@
 package org.bear.serverPlugin.ui;
 
-import net.kyori.adventure.text.Component;
-import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.data.PlayerData;
-import org.bukkit.Bukkit;
+import org.bear.serverPlugin.utils.InventoryCoordinate;
+import org.bear.serverPlugin.utils.InventoryCoordinateUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,17 +22,24 @@ public class UpgradeUI {
         this.state = state;
     }
 
-    public void openUpgradeUI(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, Component.text("Upgrades"));
-        inv.setItem(10, createIslandUpgradeBtn(player));  // Using Island Expansion with its own level
-        inv.setItem(12, createGenUpgradeMenuBtn());  // Using Island Expansion with its own level
-        player.openInventory(inv);
+    protected void updateInventory() {
+        setSlotItem(createIslandUpgradeBtn(), islandUpgradeCoordinate);
+        setSlotItem(createGenUpgradeMenuBtn(), generatorUpgradeCoordinate);
+        setSlotItem(create);
     }
 
-    public ItemStack createIslandUpgradeBtn(Player player) {
-        PlayerData data = state.getPlayerData(player.getUniqueId());
-        //int currentLevel = data.islandExpansionLevel;  // Now using islandLevel
-        int currentLevel = 2;
+    protected boolean onSlotClick(Player player, InventoryCoordinate coordinate, ClickType clickType) {
+        if (coordinate.isAt(islandUpgradeCoordinate)) {
+            // island upgrade
+        } else if (coordinate.isAt(generatorUpgradeCoordinate)) {
+            // generator upgrade
+        }
+
+        return false;
+    }
+
+    public ItemStack createIslandUpgradeBtn() {
+        int currentLevel = data.islandExpansionLevel;
         Map<Integer, Integer> costs = state.islandExpansionLevelCosts;  // islandLevelCosts map
         int cost = costs.getOrDefault(currentLevel, 0);
         boolean canAfford = data.crypto >= cost;
@@ -51,6 +57,32 @@ public class UpgradeUI {
             meta.setLore(Arrays.asList(
                     ChatColor.DARK_GRAY + "Add a chunk to your island per level",
                     ChatColor.GRAY + "Level: " + currentLevel,  // Show current island level
+                    costText
+            ));
+
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            item.setItemMeta(meta);
+        }
+
+        return item;
+    }
+
+    public ItemStack createMaxGeneratorsBtn() {
+        int cost = costs.getOrDefault(playerData.maxGenerators, 0);
+
+        ItemStack item = new ItemStack(Material.BARREL);
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + "Storage");
+
+            String costText = playerData.maxGenerators == state.maxSlotLevel
+                    ? ChatColor.RED + "Max level reached"
+                    : (playerData.crypto >= cost ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
+
+            meta.setLore(Arrays.asList(
+                    ChatColor.DARK_GRAY + "Enables you to place an additional Gen per level",
+                    ChatColor.GRAY + "Level: " + playerData.maxGenerators,
                     costText
             ));
 

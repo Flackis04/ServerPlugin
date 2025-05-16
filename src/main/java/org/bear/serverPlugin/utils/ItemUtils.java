@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -127,5 +128,21 @@ public class ItemUtils {
         if (!player.getInventory().contains(ItemUtils.getGen()) && state.getPlayerData(player.getUniqueId()).generators.stream().noneMatch(gen -> gen.location !=null)) {
             player.getInventory().addItem(ItemUtils.getGen());
         }
+    }
+
+    public static ItemStack Button(Material mat, String name, String description) {
+        ItemStack button = new ItemStack(mat);
+        ItemMeta meta = button.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GRAY + name);
+            meta.setLore(List.of(
+                    ChatColor.DARK_GRAY + description
+            ));
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            button.setItemMeta(meta);
+        }
+
+        return button;
     }
 }

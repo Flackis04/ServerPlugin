@@ -13,13 +13,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
-import java.util.Map;
 
-public class GenUI {
-    private final PluginState state;
+public class GeneratorUI extends UIBlueprint {
+    private final PlayerData playerData;
+    private final PlayerGenerator generator;
 
-    public GenUI(PluginState state) {
-        this.state = state;
+    public GeneratorUI(PlayerData playerData, PlayerGenerator generator) {
+        super(6, "Generator", false);
+        this.playerData = playerData;
+        this.generator = generator;
     }
 
 

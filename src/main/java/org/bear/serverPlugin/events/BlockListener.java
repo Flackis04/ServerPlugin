@@ -4,7 +4,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.utils.ItemUtils;
-import org.bear.serverPlugin.world.GenManager;
+import org.bear.serverPlugin.world.GeneratorTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,9 +22,8 @@ import java.util.*;
 
 public class BlockListener implements Listener {
     private final PluginState state;
-    private final GenManager gen;
 
-    public BlockListener(PluginState state, GenManager gen) {
+    public BlockListener(PluginState state) {
         this.state = state;
         this.gen = gen;
     }

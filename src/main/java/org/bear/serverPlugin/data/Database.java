@@ -68,11 +68,8 @@ public class Database {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
                 "block TEXT," +
-                "delayLevelCost INTEGER," +
-                "overclockLevelCost INTEGER," +
-                "shardLevelCost INTEGER," +
-                "beaconLevelCost INTEGER," +
-                "fortuneLevelCost INTEGER," +
+                join(',', Arrays.stream(PlayerGenerator.Trait.values()).map(t -> t.columnPrefix + "Cost INTEGER").toList()) +
+                join(',', Arrays.stream(PlayerGenerator.Trait.values()).map(t -> t.columnPrefix + "MaxLevel INTEGER").toList()) +
                 ");";
 
         statements += "CREATE TABLE IF NOT EXISTS locations (" +

@@ -2,41 +2,43 @@ package org.bear.serverPlugin.ui;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bear.serverPlugin.data.PlayerData;
+import org.bear.serverPlugin.utils.InventoryCoordinate;
+import org.bear.serverPlugin.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bear.serverPlugin.data.PluginState;
-import org.bear.serverPlugin.utils.ItemUtils;
 
 import java.util.List;
-import java.util.ArrayList;
 
-public class MarketUI {
+public class MarketUI extends UIBlueprint {
+    private PlayerData playerData;
 
-    private static final String UI_TITLE = "Market";
-    private static final int INVENTORY_SIZE = 27;
-    private final PluginState state;
-    public MarketUI(PluginState state) {
-        this.state = state;
-    }
-    public void openMarketUI(Player player) {
-        Inventory inv = Bukkit.createInventory(null, INVENTORY_SIZE, Component.text(UI_TITLE));
-
-        inv.addItem(createMarketItem(Material.DIRT, 2, player, true));
-        inv.addItem(createMarketItem(Material.WOODEN_AXE, 100, player, false));
-        inv.addItem(createMarketItem(Material.SPLASH_POTION, 10000, player, false));
-        inv.addItem(createMarketItemFromStack(ItemUtils.getPhone(), 25000, player, false));
-
-        player.openInventory(inv);
+    public MarketUI(PlayerData playerData) {
+        super(3, "Market", false);
+        this.playerData = playerData;
     }
 
-    private ItemStack createMarketItem(Material material, int cost, Player player, Boolean isStackable) {
-        ItemStack item = new ItemStack(material);
+    protected void updateInventory() {
+        //String description = "Cost: " + cost + " crypto"
+        getInventory().addItem(
+                ItemUtils.Button(Material.DIRT, "A useful item", "odifjasodifjsodifdf"),
+                createMarketItem(new ItemStack(Material.DIRT), 2, true),
+                createMarketItem(new ItemStack(Material.WOODEN_AXE), 100, false),
+                createMarketItem(new ItemStack(Material.SPLASH_POTION), 10000, false),
+                createMarketItem(ItemUtils.getPhone(), 25000, false));
+    }
+
+    protected boolean onSlotClick(Player player, InventoryCoordinate coordinate, ClickType clickType) {
+        return false;
+    }
+
+    private ItemStack createMarketItem(ItemStack item, int cost, Boolean isStackable) {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null) {

@@ -1,29 +1,12 @@
 package org.bear.serverPlugin.data;
 
 import org.bear.serverPlugin.ScoreboardManager;
-import org.bear.serverPlugin.commands.ChunkIsland;
-import org.bear.serverPlugin.ui.*;
 import org.bear.serverPlugin.utils.MaterialUtils;
-import org.bear.serverPlugin.world.DecayConcept;
-import org.bear.serverPlugin.world.GenManager;
 import org.bukkit.Material;
 
 import java.util.*;
 
-import org.bukkit.entity.Player;
-
 public class PluginState {
-
-    // Shared UI and manager references
-    public UpgradeUI upgradeUI;
-    public MarketUI marketUI;
-    public SellUI sellUI;
-    public CollectionUI collectionUI;
-    public PhoneUI phoneUI;
-    public GenUI genUI;
-    public GenMenuUI genMenuUI;
-    public GenManager genManager;
-    public DecayConcept decayConcept;
     public final ScoreboardManager scoreboardManager;
     public Database database;
 
@@ -47,31 +30,10 @@ public class PluginState {
     public final int maxIslandExpansionLevel = 9;
     public final Map<Integer, Integer> islandExpansionLevelCosts;
 
-    // Per-player data map
-    public final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
+    private final Map<UUID, PlayerData> playerDataMap = new HashMap<>();
+    public final Map<Integer, List<PlayerGenerator>> playerGenerators;
 
-    public PluginState(
-            UpgradeUI upgradeUI,
-            MarketUI marketUI,
-            SellUI sellUI,
-            CollectionUI collectionUI,
-            PhoneUI phoneUI,
-            GenUI genUI,
-            GenMenuUI genMenuUI,
-            GenManager genManager,
-            DecayConcept decayConcept,
-            ScoreboardManager scoreboardManager,
-            Database database
-    ) {
-        this.upgradeUI = upgradeUI;
-        this.marketUI = marketUI;
-        this.sellUI = sellUI;
-        this.collectionUI = collectionUI;
-        this.phoneUI = phoneUI;
-        this.genUI = genUI;
-        this.genMenuUI = genMenuUI;
-        this.genManager = genManager;
-        this.decayConcept = decayConcept;
+    public PluginState(ScoreboardManager scoreboardManager, Database database) {
         this.scoreboardManager = scoreboardManager;
         this.database = database;
 
