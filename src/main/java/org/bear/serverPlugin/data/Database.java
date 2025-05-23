@@ -5,8 +5,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import static java.lang.String.join;
 
 public class Database {
     private Connection connection;
@@ -92,11 +93,7 @@ public class Database {
                 "location INTEGER," +
                 "generator INTEGER," +
                 "player INTEGER," +
-                "delayLevel INTEGER DEFAULT 0," +
-                "overclockLevel INTEGER DEFAULT 0," +
-                "shardLevel INTEGER DEFAULT 0," +
-                "beaconLevel INTEGER DEFAULT 0," +
-                "fortuneLevel INTEGER DEFAULT 0," +
+                join(',', Arrays.stream(PlayerGenerator.Trait.values()).map(t -> t.columnPrefix + "Level INTEGER DEFAULT 0").toList()) +
                 "FOREIGN KEY (player) REFERENCES players (id)," +
                 "FOREIGN KEY (location) REFERENCES locations (id)," +
                 "FOREIGN KEY (generator) REFERENCES generators (id)" +
@@ -111,11 +108,10 @@ public class Database {
     }
 
 
-    public void insertPlayerData(int playerId) {
-        String sql = "INSERT OR IGNORE INTO players (id) " +
-                "VALUES (?)";
+    public void insertPlayerData(UUID playerUuid) {
+        String sql = "INSERT OR IGNORE INTO players (id) VALUES (?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, playerId);
+            stmt.setInt(1, playerUuid.hashCode());
             stmt.executeUpdate();
             System.out.println("Player data inserted.");
         } catch (SQLException e) {
@@ -125,9 +121,7 @@ public class Database {
 
 
     public void updatePlayerData(int playerId, PlayerData playerData) {
-        String sql = "UPDATE players SET " +
-                "crypto = ? " +
-                "WHERE id = ?";
+        String sql = "UPDATE players SET crypto = ? WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, playerData.crypto);
@@ -135,8 +129,7 @@ public class Database {
 
             //TODO: add seenmaterials
             //TODO: add playergenerators
-
-
+            //TODO: etc...
 
             stmt.executeUpdate();
             System.out.println("Player data updated.");
@@ -146,13 +139,13 @@ public class Database {
     }
 
 
-    public PlayerData loadPlayerData(int playerId) {
+    public PlayerData loadPlayerData(UUID playerUuid) {
         PlayerData playerData = new PlayerData();
 
-        String playerDataStatement = "SELECT * FROM players WHERE id = ? ";
+        String playerDataStatement = "SELECT * FROM players WHERE id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(playerDataStatement)) {
-            stmt.setInt(1, playerId);
+            stmt.setInt(1, playerUuid.hashCode());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -163,61 +156,59 @@ public class Database {
             System.err.println("Load player data failed: " + e.getMessage());
         }
 
-        String playerGeneratorsStatement = "SELECT * FROM playerGenerators WHERE player = ? " +
-                "JOIN generators ON generators.id = generator " +
-                "JOIN locations ON locations.id = location";
-
-        try (PreparedStatement stmt = connection.prepareStatement(playerGeneratorsStatement)) {
-            stmt.setInt(1, playerId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    PlayerGenerator playerGeneratorData = new PlayerGenerator();
-                    playerGeneratorData.location = rs.getObject("locations.id") != null ? new Location(
-                            Bukkit.getServer().getWorld(rs.getString("locations.worldName")),
-                            rs.getInt("locations.x"),
-                            rs.getInt("locations.y"),
-                            rs.getInt("locations.z")
-                            ) : null;
-                    playerGeneratorData.delayLevel = rs.getInt("delayLevel");
-                    playerGeneratorData.delayLevelCost = rs.getInt("generators.delayLevelCost");
-
-                    playerGeneratorData.overclockLevel = rs.getInt("overclockLevel");
-                    playerGeneratorData.overclockLevelCost = rs.getInt("generators.overclockLevelCost");
-
-                    playerGeneratorData.shardLevel = rs.getInt("shardLevel");
-                    playerGeneratorData.shardLevelCost = rs.getInt("generators.shardLevelCost");
-
-                    playerGeneratorData.beaconLevel = rs.getInt("beaconLevel");
-                    playerGeneratorData.beaconLevelCost = rs.getInt("generators.beaconLevelCost");
-
-                    playerGeneratorData.fortuneLevel = rs.getInt("fortuneLevel");
-                    playerGeneratorData.fortuneLevelCost = rs.getInt("generators.fortuneLevelCost");
-
-
-                    playerData.generators.add(playerGeneratorData);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Load player generator data failed: " + e.getMessage());
-        }
-
         String playerSeenMaterialsStatement = "SELECT * FROM playerSeenMaterials WHERE player = ? " +
                 "JOIN materials ON materials.id = material";
 
         try (PreparedStatement stmt = connection.prepareStatement(playerSeenMaterialsStatement)) {
-            stmt.setInt(1, playerId);
+            stmt.setInt(1, playerUuid.hashCode());
 
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
+                while (rs.next())
                     playerData.seenMaterials.add(Material.getMaterial(rs.getString("materials.name")));
-                }
             }
         } catch (SQLException e) {
             System.err.println("Load player seen materials failed: " + e.getMessage());
         }
 
         return playerData;
+    }
+
+    public Map<Integer, List<PlayerGenerator>> getAllGenerators() {
+        Map<Integer, List<PlayerGenerator>> playerGenerators = new HashMap<>();
+
+        String playerGeneratorsStatement = "SELECT * FROM playerGenerators " +
+                "JOIN generators ON generators.id = generator " +
+                "JOIN locations ON locations.id = location";
+
+        try (PreparedStatement stmt = connection.prepareStatement(playerGeneratorsStatement)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    PlayerGenerator generator = new PlayerGenerator();
+
+                    generator.location = rs.getObject("locations.id") != null ? new Location(
+                            Bukkit.getServer().getWorld(rs.getString("locations.worldName")),
+                            rs.getInt("locations.x"),
+                            rs.getInt("locations.y"),
+                            rs.getInt("locations.z")
+                    ) : null;
+
+                    for (PlayerGenerator.Trait trait : PlayerGenerator.Trait.values())
+                        generator.traits.put(trait, new PlayerGenerator.TraitData(
+                                rs.getInt(trait.columnPrefix + "Level"),
+                                rs.getInt("generators." + trait.columnPrefix + "Cost"),
+                                rs.getInt("generators." + trait.columnPrefix + "MaxLevel")
+                        ));
+
+                    int playerId = rs.getInt("player");
+                    playerGenerators.putIfAbsent(playerId, new LinkedList<>());
+                    playerGenerators.get(playerId).add(generator);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Load player generator data failed: " + e.getMessage());
+        }
+
+        return playerGenerators;
     }
 
     //TODO implement

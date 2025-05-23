@@ -14,12 +14,15 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Arrays;
 import java.util.Map;
 
-public class UpgradeUI {
+public class UpgradeUI extends UIBlueprint {
+    private static InventoryCoordinate islandUpgradeCoordinate = InventoryCoordinateUtil.getCoordinateFromSlotIndex(10);
+    private static InventoryCoordinate generatorUpgradeCoordinate = InventoryCoordinateUtil.getCoordinateFromSlotIndex(12);
 
-    private final PluginState state;
+    private final PlayerData playerData;
 
-    public UpgradeUI(PluginState state) {
-        this.state = state;
+    public UpgradeUI(PlayerData playerData) {
+        super(6, "Upgrades", false);
+        this.playerData = playerData;
     }
 
     protected void updateInventory() {
@@ -42,7 +45,6 @@ public class UpgradeUI {
         int currentLevel = data.islandExpansionLevel;
         Map<Integer, Integer> costs = state.islandExpansionLevelCosts;  // islandLevelCosts map
         int cost = costs.getOrDefault(currentLevel, 0);
-        boolean canAfford = data.crypto >= cost;
 
         ItemStack item = new ItemStack(Material.GRASS_BLOCK);
         ItemMeta meta = item.getItemMeta();
@@ -52,7 +54,7 @@ public class UpgradeUI {
 
             String costText = currentLevel == state.maxIslandExpansionLevel  // Ensure max level is tracked
                     ? ChatColor.RED + "Max level reached"
-                    : (canAfford ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
+                    : (data.crypto >= cost ? ChatColor.GREEN : ChatColor.RED) + "Cost: " + cost;
 
             meta.setLore(Arrays.asList(
                     ChatColor.DARK_GRAY + "Add a chunk to your island per level",
@@ -94,7 +96,6 @@ public class UpgradeUI {
     }
 
     public ItemStack createGenUpgradeMenuBtn() {
-
         ItemStack item = new ItemStack(Material.IRON_BLOCK);
         ItemMeta meta = item.getItemMeta();
 

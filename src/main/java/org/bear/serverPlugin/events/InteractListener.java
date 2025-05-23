@@ -3,7 +3,7 @@ package org.bear.serverPlugin.events;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.utils.BlockUtils;
 import org.bear.serverPlugin.utils.ItemUtils;
-import org.bear.serverPlugin.world.GenManager;
+import org.bear.serverPlugin.world.GeneratorTask;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,9 +17,9 @@ import java.util.Objects;
 public class InteractListener implements Listener {
 
     private final PluginState state;
-    private final GenManager gen;
+    private final GeneratorTask gen;
 
-    public InteractListener(PluginState state, GenManager gen) {
+    public InteractListener(PluginState state, GeneratorTask gen) {
         this.state = state;
         this.gen = gen;
     }

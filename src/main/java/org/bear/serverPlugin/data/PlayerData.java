@@ -13,6 +13,5 @@ public class PlayerData {
     public int multiplier;
 
     public final Set<Island> islands = new HashSet<>();
-    public final Set<PlayerGenerator> generators = new HashSet<>();
     public final Set<Material> seenMaterials = new HashSet<>();
 }

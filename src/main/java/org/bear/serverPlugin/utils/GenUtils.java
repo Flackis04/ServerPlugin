@@ -9,14 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GenUtils {
-    public static ItemStack randomValuable(PluginState state, Player player) {
-
-        ItemStack item = new ItemStack(MaterialUtils.getRandomMaterialFromMap(state.valuables));
+    public static ItemStack randomValuable() {
+        ItemStack item = new ItemStack(MaterialUtils.getRandomMaterialFromMap(PluginState.valuables));
         var meta = item.getItemMeta();
         if (meta != null) {
             List<String> lore = new ArrayList<>();
             Material type = item.getType();
-            int sellPrice = state.sellPrices.getOrDefault(type, 0);
+            int sellPrice = PluginState.sellPrices.getOrDefault(type, 0);
 
             String description = "Sell price: " + sellPrice + "\n" +
                     "Drop chance: " + String.format("%.2f", "dropchance") + "%";

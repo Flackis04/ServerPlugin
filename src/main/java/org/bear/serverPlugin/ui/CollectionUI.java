@@ -1,10 +1,11 @@
 package org.bear.serverPlugin.ui;
 
 import org.bear.serverPlugin.data.PluginState;
+import org.bear.serverPlugin.utils.InventoryCoordinate;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,34 +15,30 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 
-public class CollectionUI {
+public class CollectionUI extends UIBlueprint {
+    private final Set<Material> seenMaterials;
 
-    private final PluginState state;
-
-    public CollectionUI(PluginState state) {
-        this.state = state;
+    public CollectionUI(Set<Material> seenMaterials) {
+        super(6, "Collection", false);
+        this.seenMaterials = seenMaterials;
     }
 
-    // Updates the collection UI by adding collected materials to the inventory
-    public void updateCollectionUI(Player player) {
-        Inventory inv = player.getOpenInventory().getTopInventory(); // Use the currently open inventory
-
-        // Clear the inventory (optional)
-        inv.clear();
-
-        // Add all collected materials to the inventory
+    protected void updateInventory() {
         int slot = 0;
-        for (Material mat : state.getPlayerData(player.getUniqueId()).seenMaterials) {
-            if (slot >= inv.getSize()) break;  // Prevent overflow if collection is too large
-            inv.setItem(slot, createCollectionMat(mat));
+        for (Material mat : seenMaterials) {
+            // TODO: Pagination
+            if (slot >= getInventory().getSize()) break;  // Prevent overflow if collection is too large
+            getInventory().setItem(slot, itemFromMaterial(mat));
             slot++;
         }
+    }
 
-        player.updateInventory(); // Force the inventory to update on the player's screen
+    protected boolean onSlotClick(Player player, InventoryCoordinate coordinate, ClickType clickType) {
+        return false;
     }
 
     // Creates an item representing a collected material
-    public ItemStack createCollectionMat(Material mat) {
+    public ItemStack itemFromMaterial(Material mat) {
         ItemStack item = new ItemStack(mat);
         ItemMeta meta = item.getItemMeta();
 

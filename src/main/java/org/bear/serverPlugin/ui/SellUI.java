@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class SellUI implements Listener {
-    private final Map<UUID, Inventory> openSellUIs = new HashMap<>();
+public class SellUI extends UIBlueprint {
+    public SellUI() {
+        super(4, "Sell", false);
+    }
 
     protected void updateInventory(){
 

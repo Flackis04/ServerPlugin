@@ -28,7 +28,7 @@ public class PlayerListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (state.getPlayerData(player.getUniqueId()).generators.stream().anyMatch(gen -> gen.location != null)){
-            state.genManager.startGenLoop(player);
+            GeneratorTask.startGenLoop(player);
             player.sendMessage(String.valueOf(state.getPlayerData(player.getUniqueId()).generators.stream().filter(gen -> gen.location != null).count()));
         }
 

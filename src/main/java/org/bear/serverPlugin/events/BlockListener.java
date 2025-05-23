@@ -1,6 +1,5 @@
 package org.bear.serverPlugin.events;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.bear.serverPlugin.data.PlayerData;
 import org.bear.serverPlugin.data.PluginState;
 import org.bear.serverPlugin.utils.ItemUtils;
@@ -25,7 +24,6 @@ public class BlockListener implements Listener {
 
     public BlockListener(PluginState state) {
         this.state = state;
-        this.gen = gen;
     }
 
     @EventHandler
@@ -56,9 +54,7 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        Block destroyedBlock = event.getBlock();
-        Player player = event.getPlayer();
-        gen.onGenRemoveEvent(player, destroyedBlock, false);
+        GeneratorTask.onGenRemoveEvent(state, event.getPlayer(), event.getBlock());
     }
 
 
@@ -85,7 +81,7 @@ public class BlockListener implements Listener {
 
         if (hasSellPrice && state.orderedMats.contains(mat) && !data.seenMaterials.contains(mat)) {
             data.seenMaterials.add(mat);
-            state.collectionUI.createCollectionMat(mat);
+            state.collectionUI.itemFromMaterial(mat);
             //state.collectionUI.updateCollectionUI(player);
         }
     }

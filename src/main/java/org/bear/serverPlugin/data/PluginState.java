@@ -8,25 +8,19 @@ import java.util.*;
 
 public class PluginState {
     public final ScoreboardManager scoreboardManager;
-    public Database database;
+    public final Database database;
 
-
-
-    // Shared item-related data
-    public final List<Material> orderedMats = List.of(
+    public static final List<Material> orderedMats = List.of(
             Material.DIRT, Material.STONE, Material.COAL,
             Material.IRON_INGOT, Material.GOLD_INGOT,
             Material.DIAMOND, Material.EMERALD,
             Material.NETHERITE_SCRAP, Material.NETHERITE_INGOT
     );
-    public Map<Material, Double> valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27, 1);
+    public static final Map<Material, Double> valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27, 1);
 //    public Map<Material, Double> valuables = MaterialUtils.generateExponentialWeights(orderedMats, 0.27, multiplierLevel);
 
-    public Map<Material, Integer> sellPrices = MaterialUtils.generateSellPrices(this.valuables, 10000);
+    public static final Map<Material, Integer> sellPrices = MaterialUtils.generateSellPrices(valuables, 10000);
 
-
-    public final int maxDelayLevel = 4;
-    public final int maxSlotLevel = 16;
     public final int maxIslandExpansionLevel = 9;
     public final Map<Integer, Integer> islandExpansionLevelCosts;
 
@@ -36,6 +30,7 @@ public class PluginState {
     public PluginState(ScoreboardManager scoreboardManager, Database database) {
         this.scoreboardManager = scoreboardManager;
         this.database = database;
+        this.playerGenerators = database.getAllGenerators();
 
         //this.delayLevelCosts = generateLevelCosts(maxDelayLevel, 1000, 50000, 2.25, true);
         //this.slotLevelCosts = generateLevelCosts(maxSlotLevel, 500, 1000000, 2.75, true);
@@ -44,18 +39,12 @@ public class PluginState {
 
     public PlayerData getPlayerData(UUID uuid) {
         PlayerData playerData = playerDataMap.get(uuid);
-        if(playerData==null){
-            database.insertPlayerData(uuid.hashCode());
-            playerData = database.loadPlayerData(uuid.hashCode());
+        if (playerData == null) {
+            database.insertPlayerData(uuid);
+            playerData = database.loadPlayerData(uuid);
             playerDataMap.put(uuid, playerData);
         }
         return playerData;
-    }
-
-    public int getDelayTicks(Player player) {
-        //int delayLevel = getPlayerData(player.getUniqueId()).delayLevel;
-        int delayLevel = 1;
-        return Math.max(1, Math.min(15 - (delayLevel * 3), 15));
     }
 
     public Map<Integer, Integer> generateLevelCosts(int maxLevel, int minCost, int maxCost, double factor, boolean isGrowth) {
@@ -70,5 +59,4 @@ public class PluginState {
 
         return levelCosts;
     }
-
 }

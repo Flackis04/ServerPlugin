@@ -41,62 +41,20 @@ public class MarketUI extends UIBlueprint {
     private ItemStack createMarketItem(ItemStack item, int cost, Boolean isStackable) {
         ItemMeta meta = item.getItemMeta();
 
-        if (meta != null) {
-            boolean canAfford = checkPlayerCanAfford(player, cost);
+        meta.displayName(item.displayName().color(NamedTextColor.YELLOW));
 
-            meta.displayName(Component.text(toTitleCase(material.name())).color(NamedTextColor.YELLOW));
+        meta.lore(List.of(
+                Component.text("A useful item").color(NamedTextColor.GRAY),
+                Component.empty(),
+                Component.text("Cost: " + cost + " crypto").color(playerData.crypto >= cost ? NamedTextColor.GREEN : NamedTextColor.RED)
+        ));
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("A useful item").color(NamedTextColor.GRAY));
-            lore.add(Component.empty());
-            lore.add(Component.text("Cost: " + cost + " crypto").color(canAfford ? NamedTextColor.GREEN : NamedTextColor.RED));
-
-            meta.lore(lore);
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            item.setItemMeta(meta);
-        }
+        item.setItemMeta(meta);
 
         return item;
     }
 
-    private ItemStack createMarketItemFromStack(ItemStack item, int cost, Player player, Boolean isStackable) {
-        ItemMeta meta = item.getItemMeta();
-
-        if (meta != null) {
-            boolean canAfford = checkPlayerCanAfford(player, cost);
-
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("A useful item").color(NamedTextColor.GRAY));
-            lore.add(Component.empty());
-            lore.add(Component.text("Cost: " + cost + " crypto").color(canAfford ? NamedTextColor.GREEN : NamedTextColor.RED));
-
-            meta.lore(lore);
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            item.setItemMeta(meta);
-        }
-
-        return item;
-    }
-
-    private boolean checkPlayerCanAfford(Player player, int cost) {
-        // Replace with actual balance check using PlayerData
-        return true;
-    }
-
-    private String toTitleCase(String input) {
-        String[] words = input.toLowerCase().split("_");
-        StringBuilder titleCase = new StringBuilder();
-
-        for (String word : words) {
-            if (word.length() > 0) {
-                titleCase.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1))
-                        .append(" ");
-            }
-        }
-
-        return titleCase.toString().trim();
-    }
     public void openQuantityUI(Player player, Material material, int costPerItem, int quantity) {
         Inventory quantityInv = createQuantityInventory(material);
 
